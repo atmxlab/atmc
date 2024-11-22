@@ -556,3 +556,43 @@ func TestType_Ident_Regexp(t *testing.T) {
 		})
 	}
 }
+
+func TestType_Path_Regexp(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name     string
+		input    string
+		expected []int
+	}{
+		{
+			name:     "start with dot",
+			input:    `./dir/dir/cfg.atm key true 123.123::::...]test{}[][]231...:sda2131from||||import`,
+			expected: []int{0, 17},
+		},
+		{
+			name:     "start with slash",
+			input:    `/dir/dir/cfg.atm key true 123.123::::...]test{}[][]231...:sda2131from||||import`,
+			expected: []int{0, 16},
+		},
+		{
+			name:     "start with but has illegal symbols",
+			input:    `/dir/di!r/cfg.atm key true 123.123::::...]test{}[][]231...:sda2131from||||import`,
+			expected: []int{0, 7},
+		},
+		{
+			name:     "start with and .. dir",
+			input:    `./dir/../dir/cfg.atm key true 123.123::::...]test{}[][]231...:sda2131from||||import`,
+			expected: []int{0, 20},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			indexes := token.Path.Regexp().FindStringIndex(tc.input)
+			require.Equal(t, tc.expected, indexes)
+		})
+	}
+}

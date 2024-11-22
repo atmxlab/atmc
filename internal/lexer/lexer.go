@@ -6,13 +6,14 @@ import (
 )
 
 type Lexer struct {
+	input    string
 	tokens   []token.Token
 	position types.Position
 }
 
-func (l *Lexer) Tokenize(input string) ([]token.Token, error) {
+func (l *Lexer) Tokenize() ([]token.Token, error) {
 	currentInput := ""
-	for _, r := range input {
+	for _, r := range l.input {
 		l.position.IncrPos()
 		l.position.IncrColumn()
 		currentInput += string(r)
@@ -22,28 +23,19 @@ func (l *Lexer) Tokenize(input string) ([]token.Token, error) {
 			l.position.ResetColumn()
 		}
 	}
-	for len(input) > 0 {
+	for len(l.input) > 0 {
 		for _, t := range token.OrderedTokenTypes() {
-			indexes := t.Regexp().FindStringIndex(input)
-			if len(indexes) == 0 {
+			value, exists := l.Find(t)
+			if !exists {
 				continue
 			}
 
-			start := indexes[0]
-			end := indexes[1]
-
-			value := input[:end]
-			input = input[start:]
-
-			l.position.AddPos(uint(end))
-			l.position.AddColumn(uint(end))
-
 			switch t {
+			case token.WS:
+				continue
 			case token.EOL:
 				l.position.IncrLine()
 				l.position.ResetColumn()
-				continue
-			case token.WS:
 				continue
 			default:
 				l.AddToken(t, value)
@@ -65,4 +57,22 @@ func (l *Lexer) AddToken(t token.Type, value string) {
 		l.tokens,
 		tok,
 	)
+}
+
+func (l *Lexer) Find(t token.Type) (value string, exists bool) {
+	indexes := t.Regexp().FindStringIndex(l.input)
+	if len(indexes) == 0 {
+		return "", false
+	}
+
+	start := indexes[0]
+	end := indexes[1]
+
+	value = l.input[:end]
+	l.input = l.input[start:]
+
+	l.position.AddPos(uint(end))
+	l.position.AddColumn(uint(end))
+
+	return value, true
 }

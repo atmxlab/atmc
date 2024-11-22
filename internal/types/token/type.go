@@ -22,6 +22,7 @@ const (
 	String
 	Bool
 	Ident
+	Path
 )
 
 var typeRegexps = map[Type]*regexp.Regexp{
@@ -40,6 +41,7 @@ var typeRegexps = map[Type]*regexp.Regexp{
 	Bool:     regexp.MustCompile("^(true|false)\\b"),
 	String:   regexp.MustCompile(`^"(?:[^\\"]|\\.|\\\\)*"`),
 	Ident:    regexp.MustCompile("^[a-zA-Z_][a-zA-Z0-9_]*"),
+	Path:     regexp.MustCompile("^(?:/|\\./)[a-zA-Z0-9._/-]+"),
 }
 
 func (t Type) Regexp() *regexp.Regexp {
@@ -56,6 +58,7 @@ func OrderedTokenTypes() []Type {
 		WS,
 		EOL,
 		String,
+		Path,
 		Import,
 		From,
 		Bool,
