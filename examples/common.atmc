@@ -1,0 +1,24 @@
+{
+    logLevel: 3
+    postgres: {
+        host: "localhost"
+        port: 5151
+        database: "postgres"
+        username: "username"
+        password: "password"
+    }
+    rates: {
+        max: 12.44
+        min: 6.11231313
+    },
+    kafkaTopics: [
+        {
+            name: "main_topic"
+            consumerSettings: {
+                delay: 10
+            }
+        }
+    ]
+
+    selfCfg: this.postgres.host
+}

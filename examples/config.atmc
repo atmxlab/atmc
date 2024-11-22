@@ -1,0 +1,7 @@
+import common from ./common.atmc
+import production from ./production.atmc
+
+{
+    common...,
+    production...,
+}
