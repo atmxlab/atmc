@@ -8,68 +8,76 @@ import (
 type Lexer struct {
 	input    string
 	tokens   []token.Token
-	position types.Position
+	position *types.Position
+}
+
+func (l *Lexer) Position() *types.Position {
+	return l.position
+}
+
+func New(input string) *Lexer {
+	return &Lexer{
+		input:    input,
+		tokens:   make([]token.Token, 0),
+		position: types.NewInitialPosition(),
+	}
 }
 
 func (l *Lexer) Tokenize() ([]token.Token, error) {
-	currentInput := ""
-	for _, r := range l.input {
-		l.position.IncrPos()
-		l.position.IncrColumn()
-		currentInput += string(r)
-		switch true {
-		case token.EOL.Regexp().MatchString(currentInput):
-			l.position.IncrLine()
-			l.position.ResetColumn()
-		}
-	}
+	orderedTokenTypes := token.OrderedTokenTypes()
+
 	for len(l.input) > 0 {
-		for _, t := range token.OrderedTokenTypes() {
-			value, exists := l.Find(t)
+		matched := false
+
+		for _, t := range orderedTokenTypes {
+			value, exists := l.find(t)
 			if !exists {
 				continue
 			}
 
+			matched = true
+
 			switch t {
 			case token.WS:
-				continue
+				// Ничего не делаем. Просто игнорируем пробелы.
 			case token.EOL:
 				l.position.IncrLine()
 				l.position.ResetColumn()
-				continue
 			default:
-				l.AddToken(t, value)
+				l.addToken(t, value)
 			}
+
+			break
+		}
+
+		if !matched {
+			return nil, unexpectedTokenError(l.position)
 		}
 	}
 
 	return l.tokens, nil
 }
 
-func (l *Lexer) AddToken(t token.Type, value string) {
-	tok := token.NewToken(
+func (l *Lexer) addToken(t token.Type, value string) {
+	tok := token.New(
 		t,
 		token.Value(value),
 		l.position.Clone(),
 	)
 
-	l.tokens = append(
-		l.tokens,
-		tok,
-	)
+	l.tokens = append(l.tokens, tok)
 }
 
-func (l *Lexer) Find(t token.Type) (value string, exists bool) {
+func (l *Lexer) find(t token.Type) (value string, exists bool) {
 	indexes := t.Regexp().FindStringIndex(l.input)
-	if len(indexes) == 0 {
+	if len(indexes) < 2 {
 		return "", false
 	}
 
-	start := indexes[0]
 	end := indexes[1]
 
 	value = l.input[:end]
-	l.input = l.input[start:]
+	l.input = l.input[end:]
 
 	l.position.AddPos(uint(end))
 	l.position.AddColumn(uint(end))

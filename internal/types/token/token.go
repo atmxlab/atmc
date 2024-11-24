@@ -7,10 +7,10 @@ import (
 type Token struct {
 	t        Type
 	value    Value
-	position types.Position
+	position *types.Position
 }
 
-func NewToken(t Type, value Value, position types.Position) Token {
+func New(t Type, value Value, position *types.Position) Token {
 	return Token{t: t, value: value, position: position}
 }
 
@@ -22,7 +22,7 @@ func (t Token) Value() Value {
 	return t.value
 }
 
-func (t Token) Position() types.Position {
+func (t Token) Position() *types.Position {
 	return t.position
 }
 

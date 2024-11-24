@@ -6,11 +6,19 @@ type Position struct {
 	pos    uint
 }
 
-func NewPosition(line uint, column uint, pos uint) Position {
-	return Position{line: line, column: column, pos: pos}
+func NewPosition(line uint, column uint, pos uint) *Position {
+	return &Position{line: line, column: column, pos: pos}
 }
 
-func (p *Position) Clone() Position {
+func NewInitialPosition() *Position {
+	return &Position{
+		line:   1,
+		column: 0,
+		pos:    0,
+	}
+}
+
+func (p *Position) Clone() *Position {
 	return NewPosition(p.line, p.column, p.pos)
 }
 
