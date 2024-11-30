@@ -249,7 +249,7 @@ func TestParse(t *testing.T) {
 		require.Equal(t, expectedAst, a)
 	})
 
-	t.Run("with non empty array with int types", func(t *testing.T) {
+	t.Run("with non empty array with int type values", func(t *testing.T) {
 		t.Parallel()
 
 		tokens := []token.Token{
@@ -289,7 +289,7 @@ func TestParse(t *testing.T) {
 		require.Equal(t, expectedAst, a)
 	})
 
-	t.Run("with non empty array with difference types", func(t *testing.T) {
+	t.Run("with non empty array with difference type values", func(t *testing.T) {
 		t.Parallel()
 
 		tokens := []token.Token{
@@ -334,7 +334,7 @@ func TestParse(t *testing.T) {
 		require.Equal(t, expectedAst, a)
 	})
 
-	t.Run("with non empty array with object types", func(t *testing.T) {
+	t.Run("with non empty array with object type values", func(t *testing.T) {
 		t.Parallel()
 
 		tokens := []token.Token{
@@ -390,4 +390,50 @@ func TestParse(t *testing.T) {
 		require.Equal(t, expectedAst, a)
 	})
 
+	t.Run("with non empty array with array type values", func(t *testing.T) {
+		t.Parallel()
+
+		tokens := []token.Token{
+			token.New(token.LBrace, "{", gen.RandPosition()),
+			token.New(token.Ident, "arrIdent1", gen.RandPosition()),
+			token.New(token.Colon, ":", gen.RandPosition()),
+			token.New(token.LBracket, "[", gen.RandPosition()),
+			token.New(token.LBracket, "[", gen.RandPosition()),
+			token.New(token.Int, "123", gen.RandPosition()),
+			token.New(token.RBracket, "]", gen.RandPosition()),
+			token.New(token.Comma, ",", gen.RandPosition()),
+			token.New(token.LBracket, "[", gen.RandPosition()),
+			token.New(token.Int, "321", gen.RandPosition()),
+			token.New(token.RBracket, "]", gen.RandPosition()),
+			token.New(token.RBracket, "]", gen.RandPosition()),
+			token.New(token.RBrace, "}", gen.RandPosition()),
+		}
+
+		expectedAst := ast.NewAst(
+			ast.NewFile(
+				[]ast.Import{},
+				ast.NewObject([]ast.KeyValue{
+					ast.NewKeyValue(
+						ast.NewKey("arrIdent1"),
+						ast.NewArray([]ast.Node{
+							ast.NewArray([]ast.Node{
+								testast.MustNewInt(t, "123"),
+							}),
+							ast.NewArray([]ast.Node{
+								testast.MustNewInt(t, "321"),
+							}),
+						}),
+					),
+				}),
+			),
+		)
+
+		testLexer := test.NewLexer(t, tokens)
+
+		p := parser.New(testLexer)
+
+		a, err := p.Parse()
+		require.NoError(t, err)
+		require.Equal(t, expectedAst, a)
+	})
 }
