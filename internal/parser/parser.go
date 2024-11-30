@@ -24,7 +24,7 @@ func New(lexer Lexer) Parser {
 func (p Parser) Parse() (ast.Ast, error) {
 	file, err := p.parseFile()
 	if err != nil {
-		return ast.Ast{}, nil
+		return ast.Ast{}, errors.Wrap(err, "failed to parse file")
 	}
 
 	return ast.NewAst(file), nil
@@ -47,6 +47,9 @@ func (p Parser) parseFile() (ast.File, error) {
 			}
 		case token.LBrace:
 			node, err = p.parseObject()
+			if err != nil {
+				return ast.File{}, errors.Wrap(err, "failed to parse object")
+			}
 		default:
 			return ast.File{}, errors.New("unexpected token")
 		}
@@ -86,6 +89,7 @@ func (p Parser) parseIndent() (ast.Node, error) {
 			ast.NewPath(p.lexer.Token().Value().String()),
 		), nil
 	case token.Colon:
+		p.lexer.Next()
 		entry, err := p.parseEntry()
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to parse entry")
@@ -156,6 +160,8 @@ func (p Parser) parseObject() (ast.Entry, error) {
 		switch v := node.(type) {
 		case ast.KeyValue:
 			keyValues = append(keyValues, v)
+		default:
+			return nil, ErrUnexpectedToken
 		}
 
 		p.lexer.Next()
