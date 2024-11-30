@@ -2,11 +2,11 @@ package ast
 
 type Object struct {
 	entryNode
-	params []KeyValue
+	keyValues []KeyValue
 }
 
-func NewObject(params []KeyValue) Object {
-	return Object{params: params}
+func NewObject(keyValues []KeyValue) Object {
+	return Object{keyValues: keyValues}
 }
 
 type Key struct {

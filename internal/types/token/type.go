@@ -1,10 +1,49 @@
 package token
 
 import (
+	"fmt"
 	"regexp"
 )
 
 type Type uint
+
+func (t Type) String() string {
+	switch t {
+
+	case WS:
+		return "WS"
+	case EOL:
+		return "EOL"
+	case LBrace:
+		return "LBrace"
+	case RBrace:
+		return "RBrace"
+	case LBracket:
+		return "LBracket"
+	case RBracket:
+		return "RBracket"
+	case Spread:
+		return "Spread"
+	case Comma:
+		return "Comma"
+	case Colon:
+		return "Colon"
+	case Int:
+		return "Int"
+	case Float:
+		return "Float"
+	case String:
+		return "String"
+	case Bool:
+		return "Bool"
+	case Ident:
+		return "Ident"
+	case Path:
+		return "Path"
+	default:
+		return fmt.Sprintf("undefined token type: %d", t)
+	}
+}
 
 const (
 	WS Type = iota

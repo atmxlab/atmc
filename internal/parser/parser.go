@@ -97,7 +97,7 @@ func (p Parser) parseIndent() (ast.Node, error) {
 
 		return ast.NewKeyValue(ast.NewKey(prevToken.Value().String()), entry), nil
 	default:
-		return nil, ErrUnexpectedToken
+		return nil, NewErrUnexpectedToken(token.Path, token.Colon)
 	}
 }
 
@@ -140,7 +140,14 @@ func (p Parser) parseEntry() (ast.Entry, error) {
 
 		return i, nil
 	default:
-		return nil, ErrUnexpectedToken
+		return nil, NewErrUnexpectedToken(
+			token.LBrace,
+			token.LBracket,
+			token.Int,
+			token.Float,
+			token.String,
+			token.Bool,
+		)
 	}
 }
 
@@ -161,7 +168,7 @@ func (p Parser) parseObject() (ast.Entry, error) {
 		case ast.KeyValue:
 			keyValues = append(keyValues, v)
 		default:
-			return nil, ErrUnexpectedToken
+			return nil, NewErrUnexpectedNode("KeyValue")
 		}
 
 		p.lexer.Next()
@@ -175,6 +182,7 @@ func (p Parser) parseObject() (ast.Entry, error) {
 	return ast.NewObject(keyValues), nil
 }
 
+// TODO: reuse parse entry
 func (p Parser) parseArray() (ast.Entry, error) {
 	if err := p.require(token.LBracket); err != nil {
 		return nil, err
@@ -254,7 +262,15 @@ func (p Parser) parseArray() (ast.Entry, error) {
 		case token.RBracket:
 			return ast.NewArray(elements), nil
 		default:
-			return nil, ErrUnexpectedToken
+			return nil, NewErrUnexpectedToken(
+				token.LBrace,
+				token.LBracket,
+				token.Int,
+				token.Float,
+				token.String,
+				token.Bool,
+				token.RBracket,
+			)
 		}
 
 		p.lexer.Next()

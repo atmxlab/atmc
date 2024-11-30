@@ -9,3 +9,11 @@ func Wrap(err error, msg string) error {
 
 	return fmt.Errorf("%s: %w", msg, err)
 }
+
+func Wrapf(err error, msg string, a ...any) error {
+	if err == nil {
+		return nil
+	}
+
+	return fmt.Errorf("%s: %w", fmt.Sprintf(msg, a...), err)
+}
