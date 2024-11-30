@@ -23,3 +23,12 @@ func MustNewFloat(t *testing.T, str string) ast.Float {
 
 	return i
 }
+
+func MustNewBool(t *testing.T, str string) ast.Bool {
+	i, err := ast.NewBool(str)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return i
+}

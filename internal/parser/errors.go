@@ -15,6 +15,8 @@ func NewErrUnexpectedToken(expectedTokens ...token.Type) error {
 	return errors.Wrapf(ErrUnexpectedToken, "expeted tokens: %v", expectedTokens)
 }
 
-func NewErrUnexpectedNode(expectedNodes ...string) error {
+// NewUnexpectedNodeErr
+// TODO: rename!
+func NewUnexpectedNodeErr(expectedNodes ...string) error {
 	return errors.Wrapf(ErrUnexpectedToken, "expeted nodes: %v", expectedNodes)
 }

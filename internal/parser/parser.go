@@ -168,7 +168,7 @@ func (p Parser) parseObject() (ast.Entry, error) {
 		case ast.KeyValue:
 			keyValues = append(keyValues, v)
 		default:
-			return nil, NewErrUnexpectedNode("KeyValue")
+			return nil, NewUnexpectedNodeErr("KeyValue")
 		}
 
 		p.lexer.Next()
@@ -187,6 +187,8 @@ func (p Parser) parseArray() (ast.Entry, error) {
 	if err := p.require(token.LBracket); err != nil {
 		return nil, err
 	}
+
+	p.lexer.Next()
 
 	check := func() error {
 		p.lexer.Next()
@@ -259,6 +261,7 @@ func (p Parser) parseArray() (ast.Entry, error) {
 			if err = check(); err != nil {
 				return nil, err
 			}
+		case token.Comma:
 		case token.RBracket:
 			return ast.NewArray(elements), nil
 		default:

@@ -219,4 +219,175 @@ func TestParse(t *testing.T) {
 		require.Empty(t, a)
 	})
 
+	t.Run("with empty array value", func(t *testing.T) {
+		t.Parallel()
+
+		tokens := []token.Token{
+			token.New(token.LBrace, "{", gen.RandPosition()),
+			token.New(token.Ident, "arrIdent1", gen.RandPosition()),
+			token.New(token.Colon, ":", gen.RandPosition()),
+			token.New(token.LBracket, "[", gen.RandPosition()),
+			token.New(token.RBracket, "]", gen.RandPosition()),
+			token.New(token.RBrace, "}", gen.RandPosition()),
+		}
+
+		expectedAst := ast.NewAst(
+			ast.NewFile(
+				[]ast.Import{},
+				ast.NewObject([]ast.KeyValue{
+					ast.NewKeyValue(ast.NewKey("arrIdent1"), ast.NewArray([]ast.Node{})),
+				}),
+			),
+		)
+
+		testLexer := test.NewLexer(t, tokens)
+
+		p := parser.New(testLexer)
+
+		a, err := p.Parse()
+		require.NoError(t, err)
+		require.Equal(t, expectedAst, a)
+	})
+
+	t.Run("with non empty array with int types", func(t *testing.T) {
+		t.Parallel()
+
+		tokens := []token.Token{
+			token.New(token.LBrace, "{", gen.RandPosition()),
+			token.New(token.Ident, "arrIdent1", gen.RandPosition()),
+			token.New(token.Colon, ":", gen.RandPosition()),
+			token.New(token.LBracket, "[", gen.RandPosition()),
+			token.New(token.Int, "123", gen.RandPosition()),
+			token.New(token.Comma, ",", gen.RandPosition()),
+			token.New(token.Int, "456", gen.RandPosition()),
+			token.New(token.Comma, ",", gen.RandPosition()),
+			token.New(token.Int, "789", gen.RandPosition()),
+			token.New(token.Comma, ",", gen.RandPosition()),
+			token.New(token.RBracket, "]", gen.RandPosition()),
+			token.New(token.RBrace, "}", gen.RandPosition()),
+		}
+
+		expectedAst := ast.NewAst(
+			ast.NewFile(
+				[]ast.Import{},
+				ast.NewObject([]ast.KeyValue{
+					ast.NewKeyValue(ast.NewKey("arrIdent1"), ast.NewArray([]ast.Node{
+						testast.MustNewInt(t, "123"),
+						testast.MustNewInt(t, "456"),
+						testast.MustNewInt(t, "789"),
+					})),
+				}),
+			),
+		)
+
+		testLexer := test.NewLexer(t, tokens)
+
+		p := parser.New(testLexer)
+
+		a, err := p.Parse()
+		require.NoError(t, err)
+		require.Equal(t, expectedAst, a)
+	})
+
+	t.Run("with non empty array with difference types", func(t *testing.T) {
+		t.Parallel()
+
+		tokens := []token.Token{
+			token.New(token.LBrace, "{", gen.RandPosition()),
+			token.New(token.Ident, "arrIdent1", gen.RandPosition()),
+			token.New(token.Colon, ":", gen.RandPosition()),
+			token.New(token.LBracket, "[", gen.RandPosition()),
+			token.New(token.Int, "123", gen.RandPosition()),
+			token.New(token.Comma, ",", gen.RandPosition()),
+			token.New(token.Float, "456.123123", gen.RandPosition()),
+			token.New(token.Comma, ",", gen.RandPosition()),
+			token.New(token.String, `text text`, gen.RandPosition()),
+			token.New(token.Comma, ",", gen.RandPosition()),
+			token.New(token.Bool, "true", gen.RandPosition()),
+			token.New(token.Comma, ",", gen.RandPosition()),
+			token.New(token.Bool, "false", gen.RandPosition()),
+			token.New(token.RBracket, "]", gen.RandPosition()),
+			token.New(token.RBrace, "}", gen.RandPosition()),
+		}
+
+		expectedAst := ast.NewAst(
+			ast.NewFile(
+				[]ast.Import{},
+				ast.NewObject([]ast.KeyValue{
+					ast.NewKeyValue(ast.NewKey("arrIdent1"), ast.NewArray([]ast.Node{
+						testast.MustNewInt(t, "123"),
+						testast.MustNewFloat(t, "456.123123"),
+						ast.NewString(`text text`),
+						testast.MustNewBool(t, "true"),
+						testast.MustNewBool(t, "false"),
+					})),
+				}),
+			),
+		)
+
+		testLexer := test.NewLexer(t, tokens)
+
+		p := parser.New(testLexer)
+
+		a, err := p.Parse()
+		require.NoError(t, err)
+		require.Equal(t, expectedAst, a)
+	})
+
+	t.Run("with non empty array with object types", func(t *testing.T) {
+		t.Parallel()
+
+		tokens := []token.Token{
+			token.New(token.LBrace, "{", gen.RandPosition()),
+			token.New(token.Ident, "arrIdent1", gen.RandPosition()),
+			token.New(token.Colon, ":", gen.RandPosition()),
+			token.New(token.LBracket, "[", gen.RandPosition()),
+			token.New(token.LBrace, "{", gen.RandPosition()),
+			token.New(token.Ident, "nestedIdent1", gen.RandPosition()),
+			token.New(token.Colon, ":", gen.RandPosition()),
+			token.New(token.Int, "123", gen.RandPosition()),
+			token.New(token.RBrace, "}", gen.RandPosition()),
+			token.New(token.Comma, ",", gen.RandPosition()), // TODO: тут если пропустить запятую, нужно выдавать точную позицию ошибки.
+			token.New(token.LBrace, "{", gen.RandPosition()),
+			// Objects are different. We will check this at the compilation stage
+			token.New(token.Ident, "nestedIdent2", gen.RandPosition()),
+			token.New(token.Colon, ":", gen.RandPosition()),
+			token.New(token.Int, "321", gen.RandPosition()),
+			token.New(token.RBrace, "}", gen.RandPosition()),
+			token.New(token.RBracket, "]", gen.RandPosition()),
+			token.New(token.RBrace, "}", gen.RandPosition()),
+		}
+
+		expectedAst := ast.NewAst(
+			ast.NewFile(
+				[]ast.Import{},
+				ast.NewObject([]ast.KeyValue{
+					ast.NewKeyValue(
+						ast.NewKey("arrIdent1"),
+						ast.NewArray([]ast.Node{
+							ast.NewObject(
+								[]ast.KeyValue{
+									ast.NewKeyValue(ast.NewKey("nestedIdent1"), testast.MustNewInt(t, "123")),
+								},
+							),
+							ast.NewObject(
+								[]ast.KeyValue{
+									ast.NewKeyValue(ast.NewKey("nestedIdent2"), testast.MustNewInt(t, "321")),
+								},
+							),
+						}),
+					),
+				}),
+			),
+		)
+
+		testLexer := test.NewLexer(t, tokens)
+
+		p := parser.New(testLexer)
+
+		a, err := p.Parse()
+		require.NoError(t, err)
+		require.Equal(t, expectedAst, a)
+	})
+
 }
