@@ -1,6 +1,7 @@
-package types
+package ast
 
-type Config struct {
+type File struct {
+	node
 	imports []Import
 	object  Object
 }
