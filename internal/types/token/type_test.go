@@ -90,66 +90,6 @@ func TestType_WS_Regexp(t *testing.T) {
 	}
 }
 
-func TestType_Import_Regexp(t *testing.T) {
-	t.Parallel()
-
-	testCases := []struct {
-		name     string
-		input    string
-		expected []int
-	}{
-		{
-			name:     "start with",
-			input:    `import test from ./test.atmx`,
-			expected: []int{0, 6},
-		},
-		{
-			name:     "not start with",
-			input:    " import test from ./test.atmx",
-			expected: nil,
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
-			indexes := token.Import.Regexp().FindStringIndex(tc.input)
-			require.Equal(t, tc.expected, indexes)
-		})
-	}
-}
-
-func TestType_From_Regexp(t *testing.T) {
-	t.Parallel()
-
-	testCases := []struct {
-		name     string
-		input    string
-		expected []int
-	}{
-		{
-			name:     "start with",
-			input:    `from ./test.atmx`,
-			expected: []int{0, 4},
-		},
-		{
-			name:     "not start with",
-			input:    "test from ./test.atmx",
-			expected: nil,
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
-			indexes := token.From.Regexp().FindStringIndex(tc.input)
-			require.Equal(t, tc.expected, indexes)
-		})
-	}
-}
-
 func TestType_LBrace_Regexp(t *testing.T) {
 	t.Parallel()
 
@@ -306,6 +246,37 @@ func TestType_Spread_Regexp(t *testing.T) {
 		})
 	}
 }
+
+func TestType_Comma_Regexp(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name     string
+		input    string
+		expected []int
+	}{
+		{
+			name:     "start with",
+			input:    `,...]test{}[][]231...:sda2131from||||import`,
+			expected: []int{0, 1},
+		},
+		{
+			name:     "not start with",
+			input:    `[,...[][][test{}[][1,2,3,4]231:sda2131from||||import...,`,
+			expected: nil,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			indexes := token.Comma.Regexp().FindStringIndex(tc.input)
+			require.Equal(t, tc.expected, indexes)
+		})
+	}
+}
+
 func TestType_Colon_Regexp(t *testing.T) {
 	t.Parallel()
 

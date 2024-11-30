@@ -10,80 +10,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestLexer_Tokenize_TokenTypes(t *testing.T) {
-	t.Parallel()
-
-	testCases := []struct {
-		name          string
-		input         string
-		expectedTypes []token.Type
-		hasError      bool
-	}{
-		{
-			name:  "simple import",
-			input: `import common from ./common.atmx`,
-			expectedTypes: []token.Type{
-				token.Import,
-				token.Ident,
-				token.From,
-				token.Path,
-			},
-		},
-		{
-			name:  "nested import import",
-			input: `import common from /dir1/dir2/common.atmx`,
-			expectedTypes: []token.Type{
-				token.Import,
-				token.Ident,
-				token.From,
-				token.Path,
-			},
-		},
-		{
-			name:  "nested import with prev dir import",
-			input: `import common from /dir1/dir2/../common.atmx`,
-			expectedTypes: []token.Type{
-				token.Import,
-				token.Ident,
-				token.From,
-				token.Path,
-			},
-		},
-		{
-			name:          "import with invalid path",
-			input:         `import common from /dir1/dir2/..1#/common.atmx`,
-			expectedTypes: []token.Type{},
-			hasError:      true,
-		},
-		{
-			name:          "import with invalid path",
-			input:         `import common from /dir1/dir2/..1#/common.atmx`,
-			expectedTypes: []token.Type{},
-			hasError:      true,
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
-			l := lexer.New(tc.input)
-
-			tokens, err := l.Tokenize()
-			if tc.hasError {
-				require.Error(t, err)
-			} else {
-				require.NoError(t, err)
-			}
-
-			tokenTypes := collect.Map(tokens, func(item token.Token) token.Type {
-				return item.Type()
-			})
-			require.Equal(t, tc.expectedTypes, tokenTypes)
-		})
-	}
-}
-
 func TestLexer_Tokenize_Tokens(t *testing.T) {
 	t.Parallel()
 
@@ -95,27 +21,17 @@ func TestLexer_Tokenize_Tokens(t *testing.T) {
 		{
 			name: "import",
 			input: `
-				import common from ./common.atmx`,
+				common ./common.atmx`,
 			expectedTokens: []token.Token{
-				token.New(
-					token.Import,
-					"import",
-					types.NewPosition(2, 10, 11),
-				),
 				token.New(
 					token.Ident,
 					"common",
-					types.NewPosition(2, 17, 18),
-				),
-				token.New(
-					token.From,
-					"from",
-					types.NewPosition(2, 22, 23),
+					types.NewPosition(2, 10, 11),
 				),
 				token.New(
 					token.Path,
 					"./common.atmx",
-					types.NewPosition(2, 36, 37),
+					types.NewPosition(2, 24, 25),
 				),
 			},
 		},
@@ -190,6 +106,162 @@ func TestLexer_Tokenize_LexerPosition(t *testing.T) {
 			_, err := l.Tokenize()
 			require.NoError(t, err)
 			require.Equal(t, tc.expectedPos, l.Position())
+		})
+	}
+}
+
+func TestLexer_Tokenize_TokenTypes(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name          string
+		input         string
+		expectedTypes []token.Type
+		hasError      bool
+	}{
+		{
+			name:  "simple import",
+			input: `common ./common.atmx`,
+			expectedTypes: []token.Type{
+				token.Ident,
+				token.Path,
+			},
+		},
+		{
+			name:  "nested import import",
+			input: `common /dir1/dir2/common.atmx`,
+			expectedTypes: []token.Type{
+				token.Ident,
+				token.Path,
+			},
+		},
+		{
+			name:  "nested import with prev dir import",
+			input: `common /dir1/dir2/../common.atmx`,
+			expectedTypes: []token.Type{
+				token.Ident,
+				token.Path,
+			},
+		},
+		{
+			name:          "import with invalid path",
+			input:         `import common from /dir1/dir2/..1#/common.atmx`,
+			expectedTypes: []token.Type{},
+			hasError:      true,
+		},
+		{
+			name:  "ident",
+			input: `ident1 ident2 ident_3 Ident4 IDENT5 IDENT_______6 IdEnT7`,
+			expectedTypes: []token.Type{
+				token.Ident,
+				token.Ident,
+				token.Ident,
+				token.Ident,
+				token.Ident,
+				token.Ident,
+				token.Ident,
+			},
+			hasError: false,
+		},
+		{
+			name:  "simple object",
+			input: `{ key: "str value" }`,
+			expectedTypes: []token.Type{
+				token.LBrace,
+				token.Ident,
+				token.Colon,
+				token.String,
+				token.RBrace,
+			},
+			hasError: false,
+		},
+		{
+			name:  "object with key start with number",
+			input: `{ 1key: "str value" }`,
+			expectedTypes: []token.Type{
+				token.LBrace,
+				token.Int,
+				token.Ident,
+				token.Colon,
+				token.String,
+				token.RBrace,
+			},
+			hasError: false,
+		},
+		{
+			name:  "simple array",
+			input: `[123, 123, 124]`,
+			expectedTypes: []token.Type{
+				token.LBracket,
+				token.Int,
+				token.Comma,
+				token.Int,
+				token.Comma,
+				token.Int,
+				token.RBracket,
+			},
+			hasError: false,
+		},
+		{
+			name:  "one line object",
+			input: `{key1: 123 key2: 123.123 key3: "test string 12313 123.123" key_4: "test string 12313 \"test\" 123.123" kEy5: true Key6: false key7: {key8: 123} key9: ["123", "321"]}`,
+			expectedTypes: []token.Type{
+				token.LBrace,
+				token.Ident,
+				token.Colon,
+				token.Int,
+				token.Ident,
+				token.Colon,
+				token.Float,
+				token.Ident,
+				token.Colon,
+				token.String,
+				token.Ident,
+				token.Colon,
+				token.String,
+				token.Ident,
+				token.Colon,
+				token.Bool,
+				token.Ident,
+				token.Colon,
+				token.Bool,
+				token.Ident,
+				token.Colon,
+				token.LBrace,
+				token.Ident,
+				token.Colon,
+				token.Int,
+				token.RBrace,
+				token.Ident,
+				token.Colon,
+				token.LBracket,
+				token.String,
+				token.Comma,
+				token.String,
+				token.RBracket,
+				token.RBrace,
+			},
+			hasError: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			l := lexer.New(tc.input)
+
+			tokens, err := l.Tokenize()
+			if tc.hasError {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
+
+			tokenTypes := collect.Map(tokens, func(item token.Token) token.Type {
+				return item.Type()
+			})
+			require.Equal(t, tc.expectedTypes, tokenTypes)
 		})
 	}
 }

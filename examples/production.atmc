@@ -1,4 +1,4 @@
-import common from ./common.atmc
+common ./common.atmc
 
 {
     common...

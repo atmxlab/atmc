@@ -9,13 +9,12 @@ type Type uint
 const (
 	WS Type = iota
 	EOL
-	Import
-	From
 	LBrace
 	RBrace
 	LBracket
 	RBracket
 	Spread
+	Comma
 	Colon
 	Int
 	Float
@@ -28,13 +27,12 @@ const (
 var typeRegexps = map[Type]*regexp.Regexp{
 	WS:       regexp.MustCompile("^[ \\t\\r]"),
 	EOL:      regexp.MustCompile("^\\n"),
-	Import:   regexp.MustCompile("^import\\b"),
-	From:     regexp.MustCompile("^from\\b"),
 	LBrace:   regexp.MustCompile("^\\{"),
 	RBrace:   regexp.MustCompile("^}"),
 	LBracket: regexp.MustCompile("^\\["),
 	RBracket: regexp.MustCompile("^]"),
 	Spread:   regexp.MustCompile("^\\.\\.\\."),
+	Comma:    regexp.MustCompile("^,"),
 	Colon:    regexp.MustCompile("^:"),
 	Int:      regexp.MustCompile("^[-+]?[0-9]+"),
 	Float:    regexp.MustCompile("^[-+]?[0-9]+(\\.[0-9]+)"),
@@ -59,8 +57,6 @@ func OrderedTokenTypes() []Type {
 		EOL,
 		String,
 		Path,
-		Import,
-		From,
 		Bool,
 		Float,
 		Int,
@@ -69,6 +65,7 @@ func OrderedTokenTypes() []Type {
 		LBracket,
 		RBracket,
 		Spread,
+		Comma,
 		Colon,
 		Ident,
 	}
