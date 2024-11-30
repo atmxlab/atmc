@@ -5,8 +5,8 @@ type Object struct {
 	params []KeyValue
 }
 
-func NewObject(params []KeyValue) *Object {
-	return &Object{params: params}
+func NewObject(params []KeyValue) Object {
+	return Object{params: params}
 }
 
 type Key struct {

@@ -14,15 +14,15 @@ type Node interface {
 
 type Entry interface {
 	Node
-	entryNode()
+	entryNodeMarker()
 }
 
 type Ident interface {
 	Node
-	identNode()
+	identNodeMarker()
 }
 
 type Literal interface {
 	Entry
-	literalNode()
+	literalNodeMarker()
 }

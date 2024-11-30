@@ -63,6 +63,8 @@ func (p Parser) parseFile() (ast.File, error) {
 		default:
 			return ast.File{}, errors.Wrap(ErrUnexpectedToken, "unexpected node in file")
 		}
+
+		p.lexer.Next()
 	}
 
 	return ast.NewFile(imports, object), nil

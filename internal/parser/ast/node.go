@@ -14,16 +14,16 @@ type entryNode struct {
 	node
 }
 
-func (entryNode) entryNode() {}
+func (entryNode) entryNodeMarker() {}
 
 type identNode struct {
 	node
 }
 
-func (identNode) identNode() {}
+func (identNode) identNodeMarker() {}
 
 type literalNode struct {
 	entryNode
 }
 
-func (literalNode) literalNode() {}
+func (literalNode) literalNodeMarker() {}
