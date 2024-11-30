@@ -182,7 +182,6 @@ func (p Parser) parseObject() (ast.Entry, error) {
 	return ast.NewObject(keyValues), nil
 }
 
-// TODO: reuse parse entry
 func (p Parser) parseArray() (ast.Entry, error) {
 	if err := p.require(token.LBracket); err != nil {
 		return nil, err
@@ -204,60 +203,19 @@ func (p Parser) parseArray() (ast.Entry, error) {
 
 	for {
 		switch p.lexer.Token().Type() {
-		case token.LBrace:
-			obj, err := p.parseObject()
+		case
+			token.LBrace,
+			token.LBracket,
+			token.Int,
+			token.Float,
+			token.String,
+			token.Bool:
+			node, err := p.parseEntry()
 			if err != nil {
-				return nil, errors.Wrap(err, "failed to parse object")
+				return nil, errors.Wrap(err, "failed to parse entry¬")
 			}
 
-			elements = append(elements, obj)
-			if err = check(); err != nil {
-				return nil, err
-			}
-		case token.LBracket:
-			arr, err := p.parseArray()
-			if err != nil {
-				return nil, errors.Wrap(err, "failed to parse array")
-			}
-
-			elements = append(elements, arr)
-
-			if err = check(); err != nil {
-				return nil, err
-			}
-		case token.Int:
-			i, err := ast.NewInt(p.lexer.Token().Value().String())
-			if err != nil {
-				return nil, errors.Wrap(err, "ast new int")
-			}
-			elements = append(elements, i)
-
-			if err = check(); err != nil {
-				return nil, err
-			}
-		case token.Float:
-			i, err := ast.NewFloat(p.lexer.Token().Value().String())
-			if err != nil {
-				return nil, errors.Wrap(err, "ast new float")
-			}
-			elements = append(elements, i)
-
-			if err = check(); err != nil {
-				return nil, err
-			}
-		case token.String:
-			elements = append(elements, ast.NewString(p.lexer.Token().Value().String()))
-
-			if err := check(); err != nil {
-				return nil, err
-			}
-		case token.Bool:
-			i, err := ast.NewBool(p.lexer.Token().Value().String())
-			if err != nil {
-				return nil, errors.Wrap(err, "ast new bool")
-			}
-			elements = append(elements, i)
-
+			elements = append(elements, node)
 			if err = check(); err != nil {
 				return nil, err
 			}
@@ -272,6 +230,7 @@ func (p Parser) parseArray() (ast.Entry, error) {
 				token.Float,
 				token.String,
 				token.Bool,
+				token.Comma,
 				token.RBracket,
 			)
 		}
