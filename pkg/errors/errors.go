@@ -1,5 +1,7 @@
 package errors
 
-const (
-	ErrInvalidArgument = "InvalidArgument"
+import "errors"
+
+var (
+	ErrInvalidArgument = errors.New("InvalidArgument")
 )

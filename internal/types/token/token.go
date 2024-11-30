@@ -27,3 +27,7 @@ func (t Token) Position() *types.Position {
 }
 
 type Value string
+
+func (v Value) String() string {
+	return string(v)
+}

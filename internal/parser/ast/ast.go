@@ -1,11 +1,11 @@
 package ast
 
 type Ast struct {
-	root Node
+	file File
 }
 
-func (a Ast) Root() Node {
-	return a.root
+func NewAst(file File) Ast {
+	return Ast{file: file}
 }
 
 type Node interface {
@@ -20,4 +20,9 @@ type Entry interface {
 type Ident interface {
 	Node
 	identNode()
+}
+
+type Literal interface {
+	Entry
+	literalNode()
 }

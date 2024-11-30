@@ -21,3 +21,9 @@ type identNode struct {
 }
 
 func (identNode) identNode() {}
+
+type literalNode struct {
+	entryNode
+}
+
+func (literalNode) literalNode() {}

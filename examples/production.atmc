@@ -1,4 +1,6 @@
 common ./common.atmc
+common2 ./common2.atmc
+common3 ./common3.atmc
 
 {
     common...

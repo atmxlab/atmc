@@ -16,8 +16,16 @@ type Path struct {
 	string
 }
 
-func NewImport(name Name, path Path) *Import {
-	return &Import{name: name, path: path}
+func NewName(string string) Name {
+	return Name{string: string}
+}
+
+func NewPath(string string) Path {
+	return Path{string: string}
+}
+
+func NewImport(name Name, path Path) Import {
+	return Import{name: name, path: path}
 }
 
 func (i Import) Path() Path {

@@ -2,5 +2,9 @@ package ast
 
 type Array struct {
 	entryNode
-	elements []Entry
+	elements []Node
+}
+
+func NewArray(elements []Node) Array {
+	return Array{elements: elements}
 }

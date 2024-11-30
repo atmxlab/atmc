@@ -5,3 +5,7 @@ type File struct {
 	imports []Import
 	object  Object
 }
+
+func NewFile(imports []Import, object Object) File {
+	return File{imports: imports, object: object}
+}
