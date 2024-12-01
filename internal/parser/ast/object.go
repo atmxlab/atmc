@@ -18,6 +18,7 @@ type Key struct {
 	string
 }
 
+// TODO: сделать ключ типом Ident
 func NewKey(string string) Key {
 	return Key{string: string}
 }
