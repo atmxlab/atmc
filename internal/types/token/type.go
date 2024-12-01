@@ -9,37 +9,38 @@ type Type uint
 
 func (t Type) String() string {
 	switch t {
-
 	case WS:
-		return "WS"
+		return "white space"
 	case EOL:
-		return "EOL"
+		return "end of line"
 	case LBrace:
-		return "LBrace"
+		return "left brace"
 	case RBrace:
-		return "RBrace"
+		return "right brace"
 	case LBracket:
-		return "LBracket"
+		return "left bracket"
 	case RBracket:
-		return "RBracket"
+		return "right bracket"
 	case Spread:
-		return "Spread"
+		return "spread"
 	case Comma:
-		return "Comma"
+		return "comma"
+	case Dot:
+		return "comma"
 	case Colon:
-		return "Colon"
+		return "colon"
 	case Int:
-		return "Int"
+		return "int"
 	case Float:
-		return "Float"
+		return "float"
 	case String:
-		return "String"
+		return "string"
 	case Bool:
-		return "Bool"
+		return "bool"
 	case Ident:
-		return "Ident"
+		return "ident"
 	case Path:
-		return "Path"
+		return "path"
 	default:
 		return fmt.Sprintf("undefined token type: %d", t)
 	}
@@ -73,6 +74,7 @@ var typeRegexps = map[Type]*regexp.Regexp{
 	RBracket: regexp.MustCompile("^]"),
 	Spread:   regexp.MustCompile("^\\.\\.\\."),
 	Comma:    regexp.MustCompile("^,"),
+	Dot:      regexp.MustCompile("^\\."),
 	Colon:    regexp.MustCompile("^:"),
 	Int:      regexp.MustCompile("^[-+]?[0-9]+"),
 	Float:    regexp.MustCompile("^[-+]?[0-9]+(\\.[0-9]+)"),
@@ -106,6 +108,7 @@ func OrderedTokenTypes() []Type {
 		RBracket,
 		Spread,
 		Comma,
+		Dot,
 		Colon,
 		Ident,
 	}

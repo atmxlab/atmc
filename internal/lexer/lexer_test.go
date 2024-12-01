@@ -145,7 +145,7 @@ func TestLexer_Tokenize_TokenTypes(t *testing.T) {
 		},
 		{
 			name:          "import with invalid path",
-			input:         `import common from /dir1/dir2/..1#/common.atmx`,
+			input:         `common /dir1/dir2/..1#/common.atmx`,
 			expectedTypes: []token.Type{},
 			hasError:      true,
 		},
@@ -242,6 +242,99 @@ func TestLexer_Tokenize_TokenTypes(t *testing.T) {
 				token.RBrace,
 			},
 			hasError: false,
+		},
+		{
+			name: "with import, spread, var, array, literals",
+			input: `
+common ./common.atmc
+
+{
+    common...
+    common.nested...
+    common.nested.nested2...
+
+    nested: common.nested1.nested2
+    spreadObj: {
+        common.nested1...
+        ident: 123
+        common.nested1.nested2...
+    }
+
+    spreadArr: [
+        common.nested1...
+        123
+		"test"
+    ]
+}
+`,
+			expectedTypes: []token.Type{
+				token.Ident,
+				token.Path,
+
+				token.LBrace,
+
+				token.Ident,
+				token.Spread,
+
+				token.Ident,
+				token.Dot,
+				token.Ident,
+				token.Spread,
+
+				token.Ident,
+				token.Dot,
+				token.Ident,
+				token.Dot,
+				token.Ident,
+				token.Spread,
+
+				token.Ident,
+				token.Colon,
+				token.Ident,
+				token.Dot,
+				token.Ident,
+				token.Dot,
+				token.Ident,
+
+				token.Ident,
+				token.Colon,
+
+				token.LBrace,
+				token.Ident,
+				token.Dot,
+				token.Ident,
+				token.Spread,
+
+				token.Ident,
+				token.Colon,
+				token.Int,
+
+				token.Ident,
+				token.Dot,
+				token.Ident,
+				token.Dot,
+				token.Ident,
+				token.Spread,
+				token.RBrace,
+
+				token.Ident,
+				token.Colon,
+
+				token.LBracket,
+
+				token.Ident,
+				token.Dot,
+				token.Ident,
+				token.Spread,
+
+				token.Int,
+
+				token.String,
+
+				token.RBracket,
+
+				token.RBrace,
+			},
 		},
 	}
 
