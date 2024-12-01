@@ -110,6 +110,10 @@ func (p Parser) parseIndent() (ast.Node, error) {
 		}
 
 		return spreadExp, nil
+	case token.Comma, token.RBrace, token.RBracket:
+		v := ast.NewVar([]ast.Ident{ast.NewName(p.lexer.Token().Value().String())})
+		p.lexer.Prev()
+		return v, nil
 	default:
 		return nil, NewErrUnexpectedToken(token.Path, token.Colon)
 	}
@@ -165,6 +169,7 @@ func (p Parser) parseVar() (ast.Expression, error) {
 		idents = append(idents, expr.Path()[1:]...)
 		return ast.NewVar(idents), nil
 	case ast.Spread:
+		idents = append(idents, expr.Var().Path()[1:]...)
 		spreadExp := ast.NewSpread(ast.NewVar(idents))
 		return spreadExp, err
 	}
@@ -174,6 +179,18 @@ func (p Parser) parseVar() (ast.Expression, error) {
 
 func (p Parser) parseEntry() (ast.Entry, error) {
 	switch p.lexer.Token().Type() {
+	case token.Ident:
+		node, err := p.parseIndent()
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to parse indent")
+		}
+
+		switch v := node.(type) {
+		case ast.Entry:
+			return v, nil
+		default:
+			return nil, NewUnexpectedNodeErr("var", "spread")
+		}
 	case token.LBrace:
 		obj, err := p.parseObject()
 		if err != nil {
@@ -278,6 +295,7 @@ func (p Parser) parseArray() (ast.Entry, error) {
 	for {
 		switch p.lexer.Token().Type() {
 		case
+			token.Ident,
 			token.LBrace,
 			token.LBracket,
 			token.Int,
