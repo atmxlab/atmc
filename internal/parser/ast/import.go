@@ -6,18 +6,9 @@ type Import struct {
 	path Path
 }
 
-type Name struct {
-	identNode
-	string
-}
-
 type Path struct {
 	identNode
 	string
-}
-
-func NewName(string string) Name {
-	return Name{string: string}
 }
 
 func NewPath(string string) Path {

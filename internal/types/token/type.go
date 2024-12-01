@@ -61,6 +61,7 @@ const (
 	Bool
 	Ident
 	Path
+	Dot
 )
 
 var typeRegexps = map[Type]*regexp.Regexp{

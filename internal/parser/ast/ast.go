@@ -26,3 +26,8 @@ type Literal interface {
 	Entry
 	literalNodeMarker()
 }
+
+type Expression interface {
+	Entry
+	expressionNodeMarker()
+}

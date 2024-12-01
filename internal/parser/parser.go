@@ -96,9 +96,80 @@ func (p Parser) parseIndent() (ast.Node, error) {
 		}
 
 		return ast.NewKeyValue(ast.NewKey(prevToken.Value().String()), entry), nil
+	case token.Dot:
+		expr, err := p.parseVar()
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to parse spread")
+		}
+
+		return expr, nil
+	case token.Spread:
+		spreadExp, err := p.parseSpread()
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to parse spread")
+		}
+
+		return spreadExp, nil
 	default:
 		return nil, NewErrUnexpectedToken(token.Path, token.Colon)
 	}
+}
+
+func (p Parser) parseSpread() (ast.Expression, error) {
+	if err := p.require(token.Spread); err != nil {
+		return nil, err
+	}
+
+	p.lexer.Prev()
+
+	v := ast.NewVar([]ast.Ident{
+		ast.NewName(p.lexer.Token().Value().String()),
+	})
+
+	p.lexer.Next()
+
+	return ast.NewSpread(v), nil
+}
+
+func (p Parser) parseVar() (ast.Expression, error) {
+	idents := make([]ast.Ident, 0)
+
+	if err := p.require(token.Dot); err != nil {
+		return nil, err
+	}
+
+	p.lexer.Prev()
+
+	if err := p.require(token.Ident); err != nil {
+		return nil, err
+	}
+
+	idents = append(idents, ast.NewName(p.lexer.Token().Value().String()))
+
+	p.lexer.Next()
+	p.lexer.Next()
+
+	if err := p.require(token.Ident); err != nil {
+		return nil, err
+	}
+
+	idents = append(idents, ast.NewName(p.lexer.Token().Value().String()))
+
+	node, err := p.parseIndent()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to parse indent")
+	}
+
+	switch expr := node.(type) {
+	case ast.Var:
+		idents = append(idents, expr.Path()[1:]...)
+		return ast.NewVar(idents), nil
+	case ast.Spread:
+		spreadExp := ast.NewSpread(ast.NewVar(idents))
+		return spreadExp, err
+	}
+
+	return ast.NewVar(idents), nil
 }
 
 func (p Parser) parseEntry() (ast.Entry, error) {
@@ -160,6 +231,7 @@ func (p Parser) parseObject() (ast.Entry, error) {
 	p.lexer.Next()
 
 	keyValues := make([]ast.KeyValue, 0)
+	spreads := make([]ast.Spread, 0)
 
 	var node ast.Node
 	for p.match(token.Ident) {
@@ -167,6 +239,8 @@ func (p Parser) parseObject() (ast.Entry, error) {
 		switch v := node.(type) {
 		case ast.KeyValue:
 			keyValues = append(keyValues, v)
+		case ast.Spread:
+			spreads = append(spreads, v)
 		default:
 			return nil, NewUnexpectedNodeErr("KeyValue")
 		}
@@ -179,7 +253,7 @@ func (p Parser) parseObject() (ast.Entry, error) {
 		return nil, err
 	}
 
-	return ast.NewObject(keyValues), nil
+	return ast.NewObject(spreads, keyValues), nil
 }
 
 func (p Parser) parseArray() (ast.Entry, error) {

@@ -27,3 +27,9 @@ type literalNode struct {
 }
 
 func (literalNode) literalNodeMarker() {}
+
+type expressionNode struct {
+	entryNode
+}
+
+func (expressionNode) expressionNodeMarker() {}

@@ -2,11 +2,15 @@ package ast
 
 type Object struct {
 	entryNode
+	spreads   []Spread
 	keyValues []KeyValue
 }
 
-func NewObject(keyValues []KeyValue) Object {
-	return Object{keyValues: keyValues}
+func NewObject(spreads []Spread, keyValues []KeyValue) Object {
+	return Object{
+		spreads:   spreads,
+		keyValues: keyValues,
+	}
 }
 
 type Key struct {

@@ -1,0 +1,23 @@
+common ./common.atmc
+
+{
+    common...
+    common.nested...
+    common.nested.nested2...
+
+    nested: common.nested1.nested2
+    spreadObj: {
+        common.nested1...
+        ident: 123
+        common.nested1.nested2...
+    }
+
+    spreadArr: [
+        common.nested1...
+        123
+    ]
+
+
+    spreadArr: [12 true 23 false 31 23125 2131 12.123 "1231312" "sadadwd" "test test test"]
+    spreadArr: [12, 23, 31, 23125, 2131, 12.123, "1231312", "sadadwd", "test test test"]
+}

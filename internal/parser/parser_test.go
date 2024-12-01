@@ -34,7 +34,7 @@ func TestParse(t *testing.T) {
 				[]ast.Import{
 					ast.NewImport(ast.NewName("importVar"), ast.NewPath("./path/to/file.atmc")),
 				},
-				ast.NewObject([]ast.KeyValue{}),
+				ast.NewObject([]ast.Spread{}, []ast.KeyValue{}),
 			),
 		)
 
@@ -58,7 +58,7 @@ func TestParse(t *testing.T) {
 		expectedAst := ast.NewAst(
 			ast.NewFile(
 				[]ast.Import{},
-				ast.NewObject([]ast.KeyValue{}),
+				ast.NewObject([]ast.Spread{}, []ast.KeyValue{}),
 			),
 		)
 
@@ -88,7 +88,7 @@ func TestParse(t *testing.T) {
 		expectedAst := ast.NewAst(
 			ast.NewFile(
 				[]ast.Import{},
-				ast.NewObject([]ast.KeyValue{
+				ast.NewObject([]ast.Spread{}, []ast.KeyValue{
 					ast.NewKeyValue(ast.NewKey("field1"), testast.MustNewInt(t, "123")),
 					ast.NewKeyValue(ast.NewKey("field2"), testast.MustNewFloat(t, "123.123")),
 				}),
@@ -128,7 +128,7 @@ func TestParse(t *testing.T) {
 					ast.NewImport(ast.NewName("importVar1"), ast.NewPath("./path/to/file1.atmc")),
 					ast.NewImport(ast.NewName("importVar2"), ast.NewPath("./path/to/file2.atmc")),
 				},
-				ast.NewObject([]ast.KeyValue{
+				ast.NewObject([]ast.Spread{}, []ast.KeyValue{
 					ast.NewKeyValue(ast.NewKey("field1"), testast.MustNewInt(t, "123")),
 					ast.NewKeyValue(ast.NewKey("field2"), testast.MustNewFloat(t, "123.123")),
 				}),
@@ -163,7 +163,7 @@ func TestParse(t *testing.T) {
 					ast.NewImport(ast.NewName("importVar1"), ast.NewPath("./path/to/file1.atmc")),
 					ast.NewImport(ast.NewName("importVar2"), ast.NewPath("./path/to/file2.atmc")),
 				},
-				ast.NewObject([]ast.KeyValue{}),
+				ast.NewObject([]ast.Spread{}, []ast.KeyValue{}),
 			),
 		)
 
@@ -188,7 +188,7 @@ func TestParse(t *testing.T) {
 					ast.NewImport(ast.NewName("importVar1"), ast.NewPath("./path/to/file1.atmc")),
 					ast.NewImport(ast.NewName("importVar2"), ast.NewPath("./path/to/file2.atmc")),
 				},
-				ast.NewObject(nil),
+				ast.NewObject(nil, nil),
 			),
 		)
 
@@ -234,7 +234,7 @@ func TestParse(t *testing.T) {
 		expectedAst := ast.NewAst(
 			ast.NewFile(
 				[]ast.Import{},
-				ast.NewObject([]ast.KeyValue{
+				ast.NewObject([]ast.Spread{}, []ast.KeyValue{
 					ast.NewKeyValue(ast.NewKey("arrIdent1"), ast.NewArray([]ast.Node{})),
 				}),
 			),
@@ -270,7 +270,7 @@ func TestParse(t *testing.T) {
 		expectedAst := ast.NewAst(
 			ast.NewFile(
 				[]ast.Import{},
-				ast.NewObject([]ast.KeyValue{
+				ast.NewObject([]ast.Spread{}, []ast.KeyValue{
 					ast.NewKeyValue(ast.NewKey("arrIdent1"), ast.NewArray([]ast.Node{
 						testast.MustNewInt(t, "123"),
 						testast.MustNewInt(t, "456"),
@@ -313,7 +313,7 @@ func TestParse(t *testing.T) {
 		expectedAst := ast.NewAst(
 			ast.NewFile(
 				[]ast.Import{},
-				ast.NewObject([]ast.KeyValue{
+				ast.NewObject([]ast.Spread{}, []ast.KeyValue{
 					ast.NewKeyValue(ast.NewKey("arrIdent1"), ast.NewArray([]ast.Node{
 						testast.MustNewInt(t, "123"),
 						testast.MustNewFloat(t, "456.123123"),
@@ -361,16 +361,18 @@ func TestParse(t *testing.T) {
 		expectedAst := ast.NewAst(
 			ast.NewFile(
 				[]ast.Import{},
-				ast.NewObject([]ast.KeyValue{
+				ast.NewObject([]ast.Spread{}, []ast.KeyValue{
 					ast.NewKeyValue(
 						ast.NewKey("arrIdent1"),
 						ast.NewArray([]ast.Node{
 							ast.NewObject(
+								[]ast.Spread{},
 								[]ast.KeyValue{
 									ast.NewKeyValue(ast.NewKey("nestedIdent1"), testast.MustNewInt(t, "123")),
 								},
 							),
 							ast.NewObject(
+								[]ast.Spread{},
 								[]ast.KeyValue{
 									ast.NewKeyValue(ast.NewKey("nestedIdent2"), testast.MustNewInt(t, "321")),
 								},
@@ -412,7 +414,7 @@ func TestParse(t *testing.T) {
 		expectedAst := ast.NewAst(
 			ast.NewFile(
 				[]ast.Import{},
-				ast.NewObject([]ast.KeyValue{
+				ast.NewObject([]ast.Spread{}, []ast.KeyValue{
 					ast.NewKeyValue(
 						ast.NewKey("arrIdent1"),
 						ast.NewArray([]ast.Node{
@@ -435,5 +437,115 @@ func TestParse(t *testing.T) {
 		a, err := p.Parse()
 		require.NoError(t, err)
 		require.Equal(t, expectedAst, a)
+	})
+
+	t.Run("with spread in object", func(t *testing.T) {
+		t.Parallel()
+
+		tokens := []token.Token{
+			token.New(token.LBrace, "{", gen.RandPosition()),
+			token.New(token.Ident, "common", gen.RandPosition()),
+			token.New(token.Spread, "...", gen.RandPosition()),
+			token.New(token.Ident, "field1", gen.RandPosition()),
+			token.New(token.Colon, ":", gen.RandPosition()),
+			token.New(token.Int, "123", gen.RandPosition()),
+			token.New(token.Ident, "field2", gen.RandPosition()),
+			token.New(token.Colon, ":", gen.RandPosition()),
+			token.New(token.Float, "123.123", gen.RandPosition()),
+			token.New(token.RBrace, "}", gen.RandPosition()),
+		}
+
+		testLexer := test.NewLexer(t, tokens)
+
+		p := parser.New(testLexer)
+
+		expectedAst := ast.NewAst(
+			ast.NewFile(
+				[]ast.Import{},
+				ast.NewObject(
+					[]ast.Spread{
+						ast.NewSpread(ast.NewVar([]ast.Ident{ast.NewName("common")})),
+					},
+					[]ast.KeyValue{
+						ast.NewKeyValue(ast.NewKey("field1"), testast.MustNewInt(t, "123")),
+						ast.NewKeyValue(ast.NewKey("field2"), testast.MustNewFloat(t, "123.123")),
+					}),
+			),
+		)
+
+		a, err := p.Parse()
+		require.NoError(t, err)
+		require.Equal(t, expectedAst, a)
+	})
+
+	t.Run("with nested var spread in object", func(t *testing.T) {
+		t.Parallel()
+
+		tokens := []token.Token{
+			token.New(token.LBrace, "{", gen.RandPosition()),
+			token.New(token.Ident, "common", gen.RandPosition()),
+			token.New(token.Dot, ".", gen.RandPosition()),
+			token.New(token.Ident, "nested1", gen.RandPosition()),
+			token.New(token.Spread, "...", gen.RandPosition()),
+			token.New(token.Ident, "field1", gen.RandPosition()),
+			token.New(token.Colon, ":", gen.RandPosition()),
+			token.New(token.Int, "123", gen.RandPosition()),
+			token.New(token.Ident, "field2", gen.RandPosition()),
+			token.New(token.Colon, ":", gen.RandPosition()),
+			token.New(token.Float, "123.123", gen.RandPosition()),
+			token.New(token.RBrace, "}", gen.RandPosition()),
+		}
+
+		testLexer := test.NewLexer(t, tokens)
+
+		p := parser.New(testLexer)
+
+		expectedAst := ast.NewAst(
+			ast.NewFile(
+				[]ast.Import{},
+				ast.NewObject(
+					[]ast.Spread{
+						ast.NewSpread(ast.NewVar([]ast.Ident{
+							ast.NewName("common"),
+							ast.NewName("nested1"),
+						})),
+					},
+					[]ast.KeyValue{
+						ast.NewKeyValue(ast.NewKey("field1"), testast.MustNewInt(t, "123")),
+						ast.NewKeyValue(ast.NewKey("field2"), testast.MustNewFloat(t, "123.123")),
+					}),
+			),
+		)
+
+		a, err := p.Parse()
+		require.NoError(t, err)
+		require.Equal(t, expectedAst, a)
+	})
+
+	t.Run("with nested var without spread in object", func(t *testing.T) {
+		t.Parallel()
+
+		tokens := []token.Token{
+			token.New(token.LBrace, "{", gen.RandPosition()),
+			token.New(token.Ident, "common", gen.RandPosition()),
+			token.New(token.Dot, ".", gen.RandPosition()),
+			token.New(token.Ident, "nested1", gen.RandPosition()),
+			token.New(token.Ident, "field1", gen.RandPosition()),
+			token.New(token.Colon, ":", gen.RandPosition()),
+			token.New(token.Int, "123", gen.RandPosition()),
+			token.New(token.Ident, "field2", gen.RandPosition()),
+			token.New(token.Colon, ":", gen.RandPosition()),
+			token.New(token.Float, "123.123", gen.RandPosition()),
+			token.New(token.RBrace, "}", gen.RandPosition()),
+		}
+
+		testLexer := test.NewLexer(t, tokens)
+
+		p := parser.New(testLexer)
+
+		a, err := p.Parse()
+		require.Error(t, err)
+		require.ErrorIs(t, err, parser.ErrUnexpectedToken)
+		require.Empty(t, a)
 	})
 }
