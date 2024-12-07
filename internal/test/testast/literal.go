@@ -8,7 +8,7 @@ import (
 )
 
 func MustNewInt(t *testing.T, str string) ast.Int {
-	i, err := ast.NewInt(str, types.NewInitialLocation()) // TODO:
+	i, err := ast.NewInt(str, types.Location{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -17,7 +17,7 @@ func MustNewInt(t *testing.T, str string) ast.Int {
 }
 
 func MustNewFloat(t *testing.T, str string) ast.Float {
-	i, err := ast.NewFloat(str, types.NewInitialLocation()) // TODO:
+	i, err := ast.NewFloat(str, types.Location{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -26,7 +26,7 @@ func MustNewFloat(t *testing.T, str string) ast.Float {
 }
 
 func MustNewBool(t *testing.T, str string) ast.Bool {
-	i, err := ast.NewBool(str, types.NewInitialLocation()) // TODO:
+	i, err := ast.NewBool(str, types.Location{})
 	if err != nil {
 		t.Fatal(err)
 	}
