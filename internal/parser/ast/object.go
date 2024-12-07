@@ -1,34 +1,42 @@
 package ast
 
 type Object struct {
-	entryNode
-	spreads   []Spread
-	keyValues []KeyValue
+	expressionNode
+	spreads []Spread
+	entries []EntryNode
 }
 
-func NewObject(spreads []Spread, keyValues []KeyValue) Object {
+func (o Object) Spreads() []Spread {
+	return o.spreads
+}
+
+func (o Object) Entries() []EntryNode {
+	return o.entries
+}
+
+func NewObject(spreads []Spread, entries []EntryNode) Object {
 	return Object{
-		spreads:   spreads,
-		keyValues: keyValues,
+		spreads: spreads,
+		entries: entries,
 	}
 }
 
-type Key struct {
-	identNode
-	string
+// TODO: придумать название
+
+type EntryNode struct {
+	entryNode
+	key   Ident
+	value Expression
 }
 
-// TODO: сделать ключ типом Ident
-func NewKey(string string) Key {
-	return Key{string: string}
+func (e EntryNode) Key() Ident {
+	return e.key
 }
 
-type KeyValue struct {
-	node
-	Key   Key
-	Value Entry // object | array | literal
+func (e EntryNode) Value() Expression {
+	return e.value
 }
 
-func NewKeyValue(key Key, value Entry) KeyValue {
-	return KeyValue{Key: key, Value: value}
+func NewEntryNode(entryNode entryNode, key Ident, value Expression) EntryNode {
+	return EntryNode{entryNode: entryNode, key: key, value: value}
 }

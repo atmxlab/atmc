@@ -18,18 +18,34 @@ func (entryNode) entryNodeMarker() {}
 
 type identNode struct {
 	node
+	string
+}
+
+func (i identNode) String() string {
+	return i.string
 }
 
 func (identNode) identNodeMarker() {}
 
-type literalNode struct {
-	entryNode
-}
-
-func (literalNode) literalNodeMarker() {}
-
 type expressionNode struct {
-	entryNode
+	statementNode
 }
 
 func (expressionNode) expressionNodeMarker() {}
+
+type statementNode struct {
+	node
+}
+
+func (statementNode) statementNodeMarker() {}
+
+type literalNode[T any] struct {
+	expressionNode
+	value T
+}
+
+func (l literalNode[T]) literalNodeMarker() {}
+
+func (l literalNode[T]) Value() T {
+	return l.value
+}

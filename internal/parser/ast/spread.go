@@ -1,7 +1,7 @@
 package ast
 
 type Spread struct {
-	expressionNode
+	statementNode
 	v Var
 }
 

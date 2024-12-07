@@ -1,33 +1,13 @@
 package ast
 
 type Ast struct {
-	file File
+	root File
 }
 
-func NewAst(file File) Ast {
-	return Ast{file: file}
+func (a Ast) Root() File {
+	return a.root
 }
 
-type Node interface {
-	Pos() uint
-}
-
-type Entry interface {
-	Node
-	entryNodeMarker()
-}
-
-type Ident interface {
-	Node
-	identNodeMarker()
-}
-
-type Literal interface {
-	Entry
-	literalNodeMarker()
-}
-
-type Expression interface {
-	Entry
-	expressionNodeMarker()
+func NewAst(root File) Ast {
+	return Ast{root: root}
 }

@@ -1,10 +1,14 @@
 package ast
 
 type Array struct {
-	entryNode
-	elements []Node
+	expressionNode
+	elements []Expression
 }
 
-func NewArray(elements []Node) Array {
+func (a Array) Elements() []Expression {
+	return a.elements
+}
+
+func NewArray(elements []Expression) Array {
 	return Array{elements: elements}
 }

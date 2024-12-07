@@ -6,10 +6,7 @@ import (
 	"github.com/atmxlab/atmcfg/pkg/errors"
 )
 
-type Int struct {
-	literalNode
-	int64
-}
+type Int = literalNode[int64]
 
 func NewInt(int string) (Int, error) {
 	i, err := strconv.ParseInt(int, 10, 64)
@@ -17,13 +14,10 @@ func NewInt(int string) (Int, error) {
 		return Int{}, errors.Wrap(err, "error parsing integer")
 	}
 
-	return Int{int64: i}, nil
+	return Int{value: i}, nil
 }
 
-type Float struct {
-	literalNode
-	float64
-}
+type Float = literalNode[float64]
 
 func NewFloat(float64 string) (Float, error) {
 	fl, err := strconv.ParseFloat(float64, 10)
@@ -31,29 +25,23 @@ func NewFloat(float64 string) (Float, error) {
 		return Float{}, errors.Wrap(err, "error parsing float")
 	}
 
-	return Float{float64: fl}, nil
+	return Float{value: fl}, nil
 }
 
-type String struct {
-	literalNode
-	string
-}
+type String = literalNode[string]
 
 func NewString(string string) String {
-	return String{string: string}
+	return String{value: string}
 }
 
-type Bool struct {
-	literalNode
-	bool
-}
+type Bool literalNode[bool]
 
 func NewBool(bool string) (Bool, error) {
 	switch bool {
 	case "true":
-		return Bool{bool: true}, nil
+		return Bool{value: true}, nil
 	case "false":
-		return Bool{bool: false}, nil
+		return Bool{value: false}, nil
 	default:
 		return Bool{}, errors.New("invalid bool string")
 	}
