@@ -696,4 +696,59 @@ func TestParse(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, expectedAst, a)
 	})
+
+	t.Run("with many difference types in array", func(t *testing.T) {
+		t.Parallel()
+
+		tokens := []token.Token{
+			token.New(token.LBrace, "{", gen.RandPosition()),
+			token.New(token.Ident, "field", gen.RandPosition()),
+			token.New(token.Colon, ":", gen.RandPosition()),
+			token.New(token.LBracket, "[", gen.RandPosition()),
+			token.New(token.LBrace, "{", gen.RandPosition()),
+			token.New(token.Ident, "field", gen.RandPosition()),
+			token.New(token.Colon, ":", gen.RandPosition()),
+			token.New(token.Int, "99999999999", gen.RandPosition()),
+			token.New(token.Comma, ",", gen.RandPosition()),
+			token.New(token.Ident, "kafka", gen.RandPosition()),
+			token.New(token.Dot, ".", gen.RandPosition()),
+			token.New(token.Ident, "field", gen.RandPosition()),
+			token.New(token.Dot, ".", gen.RandPosition()),
+			token.New(token.Ident, "field", gen.RandPosition()),
+			token.New(token.Spread, "...", gen.RandPosition()),
+			token.New(token.RBrace, "}", gen.RandPosition()),
+			token.New(token.RBracket, "]", gen.RandPosition()),
+			token.New(token.RBrace, "}", gen.RandPosition()),
+		}
+
+		expectedAst := ast.NewAst(
+			ast.NewFile(
+				[]ast.Import{},
+				ast.NewObject([]ast.Spread{}, []ast.KeyValue{
+					ast.NewKeyValue(ast.NewKey("field"), ast.NewArray([]ast.Node{
+						ast.NewObject(
+							[]ast.Spread{
+								ast.NewSpread(ast.NewVar([]ast.Ident{
+									ast.NewName("kafka"),
+									ast.NewName("field"),
+									ast.NewName("field"),
+								})),
+							},
+							[]ast.KeyValue{
+								ast.NewKeyValue(ast.NewKey("field"), testast.MustNewInt(t, "99999999999")),
+							},
+						),
+					})),
+				}),
+			),
+		)
+
+		testLexer := test.NewLexer(t, tokens)
+
+		p := parser.New(testLexer)
+
+		a, err := p.Parse()
+		require.NoError(t, err)
+		require.Equal(t, expectedAst, a)
+	})
 }
