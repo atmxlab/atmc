@@ -107,13 +107,13 @@ func (p *Parser) parseObject() (ast.Object, error) {
 	p.mover.Next()
 
 	spreads := make([]ast.Spread, 0)
-	entries := make([]ast.EntryNode, 0)
+	kvs := make([]ast.KV, 0)
 
 	for {
 		entry, err := p.parseEntry()
 		switch {
 		case err == nil:
-			entries = append(entries, entry)
+			kvs = append(kvs, entry)
 			continue
 		case errors.Is(err, ErrTokenMismatch):
 		default:
@@ -143,7 +143,7 @@ func (p *Parser) parseObject() (ast.Object, error) {
 
 	return ast.NewObject(
 		spreads,
-		entries,
+		kvs,
 		types.NewLocation(start, end),
 	), nil
 }
@@ -215,12 +215,12 @@ func (p *Parser) parseVar() (ast.Var, error) {
 	), nil
 }
 
-func (p *Parser) parseEntry() (ast.EntryNode, error) {
+func (p *Parser) parseEntry() (ast.KV, error) {
 	p.mover.SavePoint()
 	defer p.mover.RemoveSavePoint()
 
 	if err := p.check(token.Ident); err != nil {
-		return ast.EntryNode{}, err
+		return ast.KV{}, err
 	}
 
 	key := ast.NewIdent(
@@ -234,7 +234,7 @@ func (p *Parser) parseEntry() (ast.EntryNode, error) {
 	p.mover.Next()
 
 	if err := p.check(token.Colon); err != nil {
-		return ast.EntryNode{}, err
+		return ast.KV{}, err
 	}
 
 	p.mover.Next()
@@ -243,12 +243,12 @@ func (p *Parser) parseEntry() (ast.EntryNode, error) {
 	switch {
 	case err == nil:
 	case errors.Is(err, ErrTokenMismatch):
-		return ast.EntryNode{}, NewErrExpectedNode("expression")
+		return ast.KV{}, NewErrExpectedNode("expression")
 	default:
-		return ast.EntryNode{}, errors.Wrap(err, "parse expression")
+		return ast.KV{}, errors.Wrap(err, "parse expression")
 	}
 
-	return ast.NewEntryNode(
+	return ast.NewKV(
 		key,
 		expr,
 		types.NewLocation(

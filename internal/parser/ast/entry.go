@@ -4,22 +4,22 @@ import "github.com/atmxlab/atmcfg/internal/types"
 
 // TODO: придумать название
 
-type EntryNode struct {
+type KV struct {
 	entryNode
 	key   Ident
 	value Expression
 }
 
-func (e EntryNode) Key() Ident {
+func (e KV) Key() Ident {
 	return e.key
 }
 
-func (e EntryNode) Value() Expression {
+func (e KV) Value() Expression {
 	return e.value
 }
 
-func NewEntryNode(key Ident, value Expression, loc types.Location) EntryNode {
-	e := EntryNode{key: key, value: value}
+func NewKV(key Ident, value Expression, loc types.Location) KV {
+	e := KV{key: key, value: value}
 	e.loc = loc
 
 	return e

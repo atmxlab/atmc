@@ -2,8 +2,6 @@ package ast
 
 import "github.com/atmxlab/atmcfg/internal/types"
 
-// TODO: возможно это вообще не узел!
-
 type ident struct {
 	identNode
 	string

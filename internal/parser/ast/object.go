@@ -5,21 +5,21 @@ import "github.com/atmxlab/atmcfg/internal/types"
 type Object struct {
 	expressionNode
 	spreads []Spread
-	entries []EntryNode
+	kvs     []KV
 }
 
 func (o Object) Spreads() []Spread {
 	return o.spreads
 }
 
-func (o Object) Entries() []EntryNode {
-	return o.entries
+func (o Object) Kvs() []KV {
+	return o.kvs
 }
 
-func NewObject(spreads []Spread, entries []EntryNode, loc types.Location) Object {
+func NewObject(spreads []Spread, kvs []KV, loc types.Location) Object {
 	o := Object{
 		spreads: spreads,
-		entries: entries,
+		kvs:     kvs,
 	}
 	o.loc = loc
 
