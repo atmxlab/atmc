@@ -35,7 +35,7 @@ type statementNode struct {
 func (statementNode) statementNodeMarker() {}
 
 type expressionNode struct {
-	statementNode
+	node
 }
 
 func (expressionNode) expressionNodeMarker() {}

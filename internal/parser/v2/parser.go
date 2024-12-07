@@ -9,9 +9,12 @@ import (
 
 type TokenMover interface {
 	Token() token.Token
-	Next()
-	Prev()
+	Next() TokenMover
+	Prev() TokenMover
 	IsEmpty() bool
+	SavePoint()
+	RemoveSavePoint()
+	ReturnToSavePoint()
 }
 
 type Parser struct {
@@ -37,15 +40,15 @@ func (p *Parser) parseFile() (ast.File, error) {
 		return ast.File{}, errors.Wrap(err, "parse imports")
 	}
 
-	start := types.NewPosition(0, 0, 0)
+	object, err := p.parseObject()
+	if err != nil {
+		return ast.File{}, errors.Wrap(err, "file expected object node")
+	}
+
+	start := object.Location().Start()
 
 	if len(imports) > 0 {
 		start = imports[0].Location().Start()
-	}
-
-	object, err := p.parseObject()
-	if err != nil {
-		return ast.File{}, errors.Wrap(err, "parse object")
 	}
 
 	end := object.Location().End()
@@ -56,8 +59,9 @@ func (p *Parser) parseFile() (ast.File, error) {
 func (p *Parser) parseImports() ([]ast.Import, error) {
 	imports := make([]ast.Import, 0)
 
-	imp, err := p.parseImport()
 	for {
+		imp, err := p.parseImport()
+
 		switch {
 		case err == nil:
 			imports = append(imports, imp)
@@ -87,7 +91,6 @@ func (p *Parser) parseImport() (ast.Import, error) {
 	p.mover.Next()
 
 	return ast.NewImport(
-		// TODO: тут нужно решить проблему локации токенов. У них тоже должна быть локация.
 		ast.NewIdent(importName.Value().String(), importName.Location()),
 		ast.NewPath(importPath.Value().String()),
 		types.NewLocation(importName.Location().Start(), importPath.Location().End()),
@@ -95,5 +98,119 @@ func (p *Parser) parseImport() (ast.Import, error) {
 }
 
 func (p *Parser) parseObject() (ast.Object, error) {
-	return ast.Object{}, nil
+	if err := p.check(token.LBrace); err != nil {
+		return ast.Object{}, err
+	}
+
+	start := p.mover.Token().Location().Start()
+
+	p.mover.Next()
+
+	spreads := make([]ast.Spread, 0)
+	entries := make([]ast.Entry, 0)
+
+	for {
+		entry, err := p.parseEntry()
+		switch {
+		case err == nil:
+			entries = append(entries, entry)
+			continue
+		case errors.Is(err, ErrTokenMismatch):
+		default:
+			return ast.Object{}, errors.Wrap(err, "parse entry")
+		}
+
+		spread, err := p.parseSpread()
+		switch {
+		case err == nil:
+			spreads = append(spreads, spread)
+			continue
+		case errors.Is(err, ErrTokenMismatch):
+		default:
+			return ast.Object{}, errors.Wrap(err, "parse spread")
+		}
+
+		break
+	}
+
+	p.mover.Next()
+
+	if err := p.require(token.RBrace); err != nil {
+		return ast.Object{}, errors.Wrap(err, "object expected rbrace in the object end position")
+	}
+
+	end := p.mover.Token().Location().End()
+
+	return ast.NewObject(
+		spreads,
+		entries,
+		types.NewLocation(start, end),
+	), nil
+}
+
+func (p *Parser) parseSpread() (ast.Spread, error) {
+	p.mover.SavePoint()
+	defer p.mover.RemoveSavePoint()
+
+	v, err := p.parseVar()
+	if err != nil {
+		return ast.Spread{}, err
+	}
+
+	p.mover.Next()
+
+	if err = p.check(token.Spread); err != nil {
+		p.mover.ReturnToSavePoint()
+		return ast.Spread{}, err
+	}
+
+	return ast.NewSpread(
+		v,
+		types.NewLocation(
+			v.Location().Start(),
+			p.mover.Token().Location().End(),
+		),
+	), nil
+}
+
+func (p *Parser) parseVar() (ast.Var, error) {
+	if err := p.check(token.Ident); err != nil {
+		return ast.Var{}, err
+	}
+
+	idents := make([]ast.Ident, 0)
+
+	idents = append(
+		idents,
+		ast.NewIdent(
+			p.mover.Token().Value().String(),
+			types.NewLocation(
+				p.mover.Token().Location().Start(),
+				p.mover.Token().Location().End()),
+		),
+	)
+
+	p.mover.Next()
+
+	if p.match(token.Dot) {
+		p.mover.Next()
+
+		v, err := p.parseVar()
+		switch {
+		case err == nil:
+			idents = append(idents, v.Path()...)
+		case errors.Is(err, ErrTokenMismatch):
+			break
+		default:
+			return ast.Var{}, errors.Wrap(err, "parse var")
+		}
+	}
+
+	return ast.NewVar(
+		idents,
+		types.NewLocation(
+			idents[0].Location().Start(),
+			idents[len(idents)-1].Location().End(),
+		),
+	), nil
 }
