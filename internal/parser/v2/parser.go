@@ -426,5 +426,34 @@ func (p *Parser) parseEnv() (ast.Env, error) {
 }
 
 func (p *Parser) parseArray() (ast.Array, error) {
-	return ast.Array{}, nil
+	if err := p.require(token.LBracket); err != nil {
+		return ast.Array{}, err
+	}
+
+	start := p.mover.Token().Location().Start()
+
+	p.mover.Next()
+
+	elements := make([]ast.Expression, 0)
+
+	for !p.match(token.RBracket) {
+		expr, err := p.parseExpression()
+		switch {
+		case err == nil:
+		case errors.Is(err, ErrTokenMismatch):
+			return ast.Array{}, NewErrExpectedNode("expression")
+		default:
+			return ast.Array{}, errors.Wrap(err, "parse expression")
+		}
+
+		elements = append(elements, expr)
+	}
+
+	return ast.NewArray(
+		elements,
+		types.NewLocation(
+			start,
+			p.mover.Token().Location().End(),
+		),
+	), nil
 }
