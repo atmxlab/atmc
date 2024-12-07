@@ -1,5 +1,7 @@
 package ast
 
+import "github.com/atmxlab/atmcfg/internal/types"
+
 type Import struct {
 	statementNode
 	name Ident
@@ -15,8 +17,15 @@ func NewPath(string string) Path {
 	return Path{string: string}
 }
 
-func NewImport(name Ident, path Path) Import {
-	return Import{name: name, path: path}
+func NewImport(
+	name Ident,
+	path Path,
+	loc types.Location,
+) Import {
+	i := Import{name: name, path: path}
+	i.loc = loc
+
+	return i
 }
 
 func (i Import) Path() Path {

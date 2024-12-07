@@ -1,9 +1,13 @@
 package ast
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/atmxlab/atmcfg/internal/types"
+)
 
 type Node interface {
-	Pos() uint
+	Location() types.Location
 }
 
 type Entry interface {

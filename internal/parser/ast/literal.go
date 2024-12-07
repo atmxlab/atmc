@@ -3,6 +3,7 @@ package ast
 import (
 	"strconv"
 
+	"github.com/atmxlab/atmcfg/internal/types"
 	"github.com/atmxlab/atmcfg/pkg/errors"
 )
 
@@ -30,18 +31,27 @@ func NewFloat(float64 string) (Float, error) {
 
 type String = literalNode[string]
 
-func NewString(string string) String {
-	return String{value: string}
+func NewString(string string, loc types.Location) String {
+	s := String{value: string}
+	s.loc = loc
+
+	return s
 }
 
 type Bool literalNode[bool]
 
-func NewBool(bool string) (Bool, error) {
+func NewBool(bool string, loc types.Location) (Bool, error) {
 	switch bool {
 	case "true":
-		return Bool{value: true}, nil
+		b := Bool{value: true}
+		b.loc = loc
+
+		return b, nil
 	case "false":
-		return Bool{value: false}, nil
+		b := Bool{value: false}
+		b.loc = loc
+
+		return b, nil
 	default:
 		return Bool{}, errors.New("invalid bool string")
 	}

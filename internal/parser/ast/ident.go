@@ -1,10 +1,17 @@
 package ast
 
+import "github.com/atmxlab/atmcfg/internal/types"
+
+// TODO: возможно это вообще не узел!
+
 type ident struct {
 	identNode
 	string
 }
 
-func NewName(string string) Ident {
-	return ident{string: string}
+func NewIdent(string string, loc types.Location) Ident {
+	i := ident{string: string}
+	i.loc = loc
+
+	return i
 }

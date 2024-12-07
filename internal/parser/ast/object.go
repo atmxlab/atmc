@@ -1,5 +1,7 @@
 package ast
 
+import "github.com/atmxlab/atmcfg/internal/types"
+
 type Object struct {
 	expressionNode
 	spreads []Spread
@@ -14,11 +16,14 @@ func (o Object) Entries() []EntryNode {
 	return o.entries
 }
 
-func NewObject(spreads []Spread, entries []EntryNode) Object {
-	return Object{
+func NewObject(spreads []Spread, entries []EntryNode, loc types.Location) Object {
+	o := Object{
 		spreads: spreads,
 		entries: entries,
 	}
+	o.loc = loc
+
+	return o
 }
 
 // TODO: придумать название

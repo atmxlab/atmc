@@ -44,15 +44,15 @@ func TestAstGenerate(t *testing.T) {
 
 	expectedAst := ast.NewAst(ast.NewFile(
 		[]ast.Import{
-			ast.NewImport(ast.NewName("common"), ast.NewPath("./dir/common.atmc")),
-			ast.NewImport(ast.NewName("kafka"), ast.NewPath("./dir/kafka.atmc")),
+			ast.NewImport(ast.NewIdent("common"), ast.NewPath("./dir/common.atmc")),
+			ast.NewImport(ast.NewIdent("kafka"), ast.NewPath("./dir/kafka.atmc")),
 		},
 		ast.NewObject(
 			[]ast.Spread{
-				ast.NewSpread(ast.NewVar([]ast.Ident{ast.NewName("common")})),
+				ast.NewSpread(ast.NewVar([]ast.Ident{ast.NewIdent("common")})),
 				ast.NewSpread(ast.NewVar([]ast.Ident{
-					ast.NewName("kafka"),
-					ast.NewName("nested"),
+					ast.NewIdent("kafka"),
+					ast.NewIdent("nested"),
 				})),
 			},
 			[]ast.KeyValue{
@@ -64,9 +64,9 @@ func TestAstGenerate(t *testing.T) {
 				ast.NewKeyValue(ast.NewKey("field6"), ast.NewObject(
 					[]ast.Spread{
 						ast.NewSpread(ast.NewVar([]ast.Ident{
-							ast.NewName("common"),
-							ast.NewName("field"),
-							ast.NewName("field"),
+							ast.NewIdent("common"),
+							ast.NewIdent("field"),
+							ast.NewIdent("field"),
 						})),
 					},
 					[]ast.KeyValue{
@@ -93,23 +93,23 @@ func TestAstGenerate(t *testing.T) {
 					testast.MustNewBool(t, "true"),
 					testast.MustNewBool(t, "false"),
 					ast.NewSpread(ast.NewVar([]ast.Ident{
-						ast.NewName("common"),
-						ast.NewName("field"),
-						ast.NewName("field"),
+						ast.NewIdent("common"),
+						ast.NewIdent("field"),
+						ast.NewIdent("field"),
 					})),
 					ast.NewVar([]ast.Ident{
-						ast.NewName("kafka"),
-						ast.NewName("field"),
-						ast.NewName("field"),
+						ast.NewIdent("kafka"),
+						ast.NewIdent("field"),
+						ast.NewIdent("field"),
 					}),
 				})),
 				ast.NewKeyValue(ast.NewKey("field9"), ast.NewArray([]ast.Node{
 					ast.NewObject(
 						[]ast.Spread{
 							ast.NewSpread(ast.NewVar([]ast.Ident{
-								ast.NewName("kafka"),
-								ast.NewName("field"),
-								ast.NewName("field"),
+								ast.NewIdent("kafka"),
+								ast.NewIdent("field"),
+								ast.NewIdent("field"),
 							})),
 						},
 						[]ast.KeyValue{

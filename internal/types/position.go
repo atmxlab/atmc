@@ -1,13 +1,30 @@
 package types
 
+type Location struct {
+	start Position
+	end   Position
+}
+
+func (l Location) Start() Position {
+	return l.start
+}
+
+func (l Location) End() Position {
+	return l.end
+}
+
+func NewLocation(start Position, end Position) Location {
+	return Location{start: start, end: end}
+}
+
 type Position struct {
 	line   uint
 	column uint
 	pos    uint
 }
 
-func NewPosition(line uint, column uint, pos uint) *Position {
-	return &Position{line: line, column: column, pos: pos}
+func NewPosition(line uint, column uint, pos uint) Position {
+	return Position{line: line, column: column, pos: pos}
 }
 
 func NewInitialPosition() *Position {

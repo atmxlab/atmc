@@ -3,11 +3,11 @@ package ast
 import "github.com/atmxlab/atmcfg/internal/types"
 
 type node struct {
-	pos types.Position
+	loc types.Location
 }
 
-func (n node) Pos() uint {
-	return n.pos.Pos()
+func (n node) Location() types.Location {
+	return n.loc
 }
 
 type entryNode struct {
@@ -27,17 +27,18 @@ func (i identNode) String() string {
 
 func (identNode) identNodeMarker() {}
 
+type statementNode struct {
+	node
+	test string
+}
+
+func (statementNode) statementNodeMarker() {}
+
 type expressionNode struct {
 	statementNode
 }
 
 func (expressionNode) expressionNodeMarker() {}
-
-type statementNode struct {
-	node
-}
-
-func (statementNode) statementNodeMarker() {}
 
 type literalNode[T any] struct {
 	expressionNode
