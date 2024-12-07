@@ -3,9 +3,9 @@ package parser_test
 import (
 	"testing"
 
+	"github.com/atmxlab/atmcfg/internal/lexer/tokenmover"
 	"github.com/atmxlab/atmcfg/internal/parser/ast"
-	parser "github.com/atmxlab/atmcfg/internal/parser/parser"
-	"github.com/atmxlab/atmcfg/internal/test"
+	"github.com/atmxlab/atmcfg/internal/parser/parser"
 	"github.com/atmxlab/atmcfg/internal/test/testast"
 	"github.com/atmxlab/atmcfg/internal/types"
 	"github.com/atmxlab/atmcfg/internal/types/token"
@@ -33,15 +33,13 @@ func TestParser_Parse(t *testing.T) {
 					[]ast.Import{
 						ast.NewImport(
 							ast.NewIdent("importName", types.Location{}),
-							ast.NewPath("./dir/dir/config.atmc"),
-							types.Location{},
+							ast.NewPath("./dir/dir/config.atmc", types.Location{}),
 						),
 					},
 					ast.NewObject(
 						[]ast.Entry{},
 						types.Location{},
 					),
-					types.Location{},
 				),
 			),
 		},
@@ -58,7 +56,6 @@ func TestParser_Parse(t *testing.T) {
 						[]ast.Entry{},
 						types.Location{},
 					),
-					types.Location{},
 				),
 			),
 		},
@@ -82,7 +79,6 @@ func TestParser_Parse(t *testing.T) {
 									[]ast.Ident{
 										ast.NewIdent("common1", types.Location{}),
 									},
-									types.Location{},
 								),
 								types.Location{},
 							),
@@ -91,14 +87,12 @@ func TestParser_Parse(t *testing.T) {
 									[]ast.Ident{
 										ast.NewIdent("common2", types.Location{}),
 									},
-									types.Location{},
 								),
 								types.Location{},
 							),
 						},
 						types.Location{},
 					),
-					types.Location{},
 				),
 			),
 		},
@@ -129,7 +123,6 @@ func TestParser_Parse(t *testing.T) {
 										ast.NewIdent("common1", types.Location{}),
 										ast.NewIdent("nested1", types.Location{}),
 									},
-									types.Location{},
 								),
 								types.Location{},
 							),
@@ -140,14 +133,12 @@ func TestParser_Parse(t *testing.T) {
 										ast.NewIdent("nested1", types.Location{}),
 										ast.NewIdent("nested2", types.Location{}),
 									},
-									types.Location{},
 								),
 								types.Location{},
 							),
 						},
 						types.Location{},
 					),
-					types.Location{},
 				),
 			),
 		},
@@ -194,42 +185,34 @@ func TestParser_Parse(t *testing.T) {
 							ast.NewKV(
 								ast.NewIdent("key1", types.Location{}),
 								testast.MustNewInt(t, "123"),
-								types.Location{},
 							),
 							ast.NewKV(
 								ast.NewIdent("key2", types.Location{}),
 								testast.MustNewFloat(t, "123.321"),
-								types.Location{},
 							),
 							ast.NewKV(
 								ast.NewIdent("key3", types.Location{}),
 								ast.NewString(`"test string"`, types.Location{}),
-								types.Location{},
 							),
 							ast.NewKV(
 								ast.NewIdent("key4", types.Location{}),
 								testast.MustNewBool(t, "false"),
-								types.Location{},
 							),
 							ast.NewKV(
 								ast.NewIdent("key5", types.Location{}),
 								testast.MustNewBool(t, "true"),
-								types.Location{},
 							),
 							ast.NewKV(
 								ast.NewIdent("key6", types.Location{}),
 								testast.MustNewInt(t, "-123"),
-								types.Location{},
 							),
 							ast.NewKV(
 								ast.NewIdent("key7", types.Location{}),
 								testast.MustNewFloat(t, "-123.321"),
-								types.Location{},
 							),
 						},
 						types.Location{},
 					),
-					types.Location{},
 				),
 			),
 		},
@@ -274,7 +257,6 @@ func TestParser_Parse(t *testing.T) {
 										ast.NewIdent("common1", types.Location{}),
 										ast.NewIdent("nested1", types.Location{}),
 									},
-									types.Location{},
 								),
 								types.Location{},
 							),
@@ -285,33 +267,28 @@ func TestParser_Parse(t *testing.T) {
 										ast.NewIdent("nested1", types.Location{}),
 										ast.NewIdent("nested2", types.Location{}),
 									},
-									types.Location{},
 								),
 								types.Location{},
 							),
 							ast.NewKV(
 								ast.NewIdent("key1", types.Location{}),
 								testast.MustNewInt(t, "123"),
-								types.Location{},
 							),
 							ast.NewKV(
 								ast.NewIdent("key2", types.Location{}),
 								testast.MustNewFloat(t, "123.321"),
-								types.Location{},
 							),
 							ast.NewSpread(
 								ast.NewVar(
 									[]ast.Ident{
 										ast.NewIdent("common3", types.Location{}),
 									},
-									types.Location{},
 								),
 								types.Location{},
 							),
 						},
 						types.Location{},
 					),
-					types.Location{},
 				),
 			),
 		},
@@ -351,31 +328,26 @@ func TestParser_Parse(t *testing.T) {
 										ast.NewKV(
 											ast.NewIdent("nested1", types.Location{}),
 											testast.MustNewInt(t, "123"),
-											types.Location{},
 										),
 										ast.NewKV(
 											ast.NewIdent("nested2", types.Location{}),
 											testast.MustNewFloat(t, "123.321"),
-											types.Location{},
 										),
 										ast.NewSpread(
 											ast.NewVar(
 												[]ast.Ident{
 													ast.NewIdent("common", types.Location{}),
 												},
-												types.Location{},
 											),
 											types.Location{},
 										),
 									},
 									types.Location{},
 								),
-								types.Location{},
 							),
 						},
 						types.Location{},
 					),
-					types.Location{},
 				),
 			),
 		},
@@ -403,12 +375,10 @@ func TestParser_Parse(t *testing.T) {
 									[]ast.Expression{},
 									types.Location{},
 								),
-								types.Location{},
 							),
 						},
 						types.Location{},
 					),
-					types.Location{},
 				),
 			),
 		},
@@ -468,14 +438,12 @@ func TestParser_Parse(t *testing.T) {
 											[]ast.Ident{
 												ast.NewIdent("nested1", types.Location{}),
 											},
-											types.Location{},
 										),
 										ast.NewObject(
 											[]ast.Entry{
 												ast.NewKV(
 													ast.NewIdent("nested2", types.Location{}),
 													testast.MustNewInt(t, "123"),
-													types.Location{},
 												),
 											},
 											types.Location{},
@@ -492,14 +460,12 @@ func TestParser_Parse(t *testing.T) {
 													[]ast.Ident{
 														ast.NewIdent("nested1", types.Location{}),
 													},
-													types.Location{},
 												),
 												ast.NewObject(
 													[]ast.Entry{
 														ast.NewKV(
 															ast.NewIdent("nested2", types.Location{}),
 															testast.MustNewInt(t, "123"),
-															types.Location{},
 														),
 													},
 													types.Location{},
@@ -515,12 +481,10 @@ func TestParser_Parse(t *testing.T) {
 									},
 									types.Location{},
 								),
-								types.Location{},
 							),
 						},
 						types.Location{},
 					),
-					types.Location{},
 				),
 			),
 		},
@@ -562,7 +526,6 @@ func TestParser_Parse(t *testing.T) {
 												[]ast.Ident{
 													ast.NewIdent("common1", types.Location{}),
 												},
-												types.Location{},
 											),
 											types.Location{},
 										),
@@ -572,7 +535,6 @@ func TestParser_Parse(t *testing.T) {
 													ast.NewIdent("common2", types.Location{}),
 													ast.NewIdent("nested1", types.Location{}),
 												},
-												types.Location{},
 											),
 											types.Location{},
 										),
@@ -580,12 +542,10 @@ func TestParser_Parse(t *testing.T) {
 									},
 									types.Location{},
 								),
-								types.Location{},
 							),
 						},
 						types.Location{},
 					),
-					types.Location{},
 				),
 			),
 		},
@@ -595,9 +555,9 @@ func TestParser_Parse(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			mover := test.NewTokenMover(t, tc.tokens)
+			mover := tokenmover.New(tc.tokens)
 
-			p := parser.NewParser(mover)
+			p := parser.New(mover)
 
 			a, err := p.Parse()
 			require.NoError(t, err)

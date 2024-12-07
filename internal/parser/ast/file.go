@@ -16,9 +16,18 @@ func (f File) Object() Object {
 	return f.object
 }
 
-func NewFile(imports []Import, object Object, loc types.Location) File {
+func NewFile(imports []Import, object Object) File {
 	f := File{imports: imports, object: object}
-	f.loc = loc
+
+	start := object.Location().Start()
+
+	if len(imports) > 0 {
+		start = imports[0].Location().Start()
+	}
+
+	end := object.Location().End()
+
+	f.loc = types.NewLocation(start, end)
 
 	return f
 }

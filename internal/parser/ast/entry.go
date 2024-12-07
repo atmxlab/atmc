@@ -18,9 +18,12 @@ func (e KV) Value() Expression {
 	return e.value
 }
 
-func NewKV(key Ident, value Expression, loc types.Location) KV {
+func NewKV(key Ident, value Expression) KV {
 	e := KV{key: key, value: value}
-	e.loc = loc
+	e.loc = types.NewLocation(
+		key.Location().Start(),
+		value.Location().End(),
+	)
 
 	return e
 }

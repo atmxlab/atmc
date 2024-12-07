@@ -8,16 +8,19 @@ import (
 )
 
 func MustNewInt(t *testing.T, str string) ast.Int {
-	i, err := ast.NewInt(str, types.Location{})
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	return i
+	return MustNewIntWithLocation(t, str, types.Location{})
 }
 
 func MustNewFloat(t *testing.T, str string) ast.Float {
-	i, err := ast.NewFloat(str, types.Location{})
+	return MustNewFloatWithLocation(t, str, types.Location{})
+}
+
+func MustNewBool(t *testing.T, str string) ast.Bool {
+	return MustNewBoolWithLocation(t, str, types.Location{})
+}
+
+func MustNewIntWithLocation(t *testing.T, str string, loc types.Location) ast.Int {
+	i, err := ast.NewInt(str, loc)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -25,8 +28,17 @@ func MustNewFloat(t *testing.T, str string) ast.Float {
 	return i
 }
 
-func MustNewBool(t *testing.T, str string) ast.Bool {
-	i, err := ast.NewBool(str, types.Location{})
+func MustNewBoolWithLocation(t *testing.T, str string, loc types.Location) ast.Bool {
+	i, err := ast.NewBool(str, loc)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return i
+}
+
+func MustNewFloatWithLocation(t *testing.T, str string, loc types.Location) ast.Float {
+	i, err := ast.NewFloat(str, loc)
 	if err != nil {
 		t.Fatal(err)
 	}

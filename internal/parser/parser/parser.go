@@ -21,7 +21,7 @@ type Parser struct {
 	mover TokenMover
 }
 
-func NewParser(mover TokenMover) *Parser {
+func New(mover TokenMover) *Parser {
 	return &Parser{mover: mover}
 }
 
@@ -45,15 +45,7 @@ func (p *Parser) parseFile() (ast.File, error) {
 		return ast.File{}, errors.Wrap(err, "file expected object node")
 	}
 
-	start := object.Location().Start()
-
-	if len(imports) > 0 {
-		start = imports[0].Location().Start()
-	}
-
-	end := object.Location().End()
-
-	return ast.NewFile(imports, object, types.NewLocation(start, end)), nil
+	return ast.NewFile(imports, object), nil
 }
 
 func (p *Parser) parseImports() ([]ast.Import, error) {
@@ -92,8 +84,7 @@ func (p *Parser) parseImport() (ast.Import, error) {
 
 	return ast.NewImport(
 		ast.NewIdent(importName.Value().String(), importName.Location()),
-		ast.NewPath(importPath.Value().String()),
-		types.NewLocation(importName.Location().Start(), importPath.Location().End()),
+		ast.NewPath(importPath.Value().String(), importPath.Location()),
 	), nil
 }
 
@@ -188,10 +179,6 @@ func (p *Parser) parseVar() (ast.Var, error) {
 
 	return ast.NewVar(
 		idents,
-		types.NewLocation(
-			idents[0].Location().Start(),
-			idents[len(idents)-1].Location().End(),
-		),
 	), nil
 }
 
@@ -250,10 +237,6 @@ func (p *Parser) parseKV() (ast.KV, error) {
 	return ast.NewKV(
 		key,
 		expr,
-		types.NewLocation(
-			key.Location().Start(),
-			expr.Location().End(),
-		),
 	), nil
 }
 

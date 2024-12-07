@@ -13,17 +13,22 @@ type Path struct {
 	string
 }
 
-func NewPath(string string) Path {
-	return Path{string: string}
+func NewPath(string string, loc types.Location) Path {
+	p := Path{string: string}
+	p.loc = loc
+
+	return p
 }
 
 func NewImport(
 	name Ident,
 	path Path,
-	loc types.Location,
 ) Import {
 	i := Import{name: name, path: path}
-	i.loc = loc
+	i.loc = types.NewLocation(
+		name.Location().Start(),
+		path.Location().End(),
+	)
 
 	return i
 }
