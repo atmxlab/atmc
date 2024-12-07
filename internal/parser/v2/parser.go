@@ -114,6 +114,8 @@ func (p *Parser) parseObject() (ast.Object, error) {
 			return ast.Object{}, err
 		}
 		entries = append(entries, entry)
+
+		p.mover.Next()
 	}
 
 	end := p.mover.Token().Location().End()
@@ -154,6 +156,9 @@ func (p *Parser) parseVar() (ast.Var, error) {
 		return ast.Var{}, err
 	}
 
+	p.mover.SavePoint()
+	defer p.mover.RemoveSavePoint()
+
 	idents := make([]ast.Ident, 0)
 
 	idents = append(
@@ -180,6 +185,8 @@ func (p *Parser) parseVar() (ast.Var, error) {
 		default:
 			return ast.Var{}, errors.Wrap(err, "parse var")
 		}
+	} else {
+		p.mover.ReturnToSavePoint()
 	}
 
 	return ast.NewVar(
@@ -228,6 +235,7 @@ func (p *Parser) parseKV() (ast.KV, error) {
 	p.mover.Next()
 
 	if err := p.check(token.Colon); err != nil {
+		p.mover.ReturnToSavePoint()
 		return ast.KV{}, err
 	}
 
@@ -270,6 +278,15 @@ func (p *Parser) parseExpression() (expr ast.Expression, err error) {
 
 	switch p.mover.Token().Type() {
 	case token.Ident:
+		expr, err = p.parseSpread()
+		switch {
+		case err == nil:
+			return expr, nil
+		case errors.Is(err, ErrTokenMismatch):
+		default:
+			return nil, err
+		}
+
 		expr, err = p.parseVar()
 		if err != nil {
 			return nil, err

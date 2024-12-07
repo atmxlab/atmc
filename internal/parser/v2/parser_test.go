@@ -44,6 +44,112 @@ func TestParser_Parse(t *testing.T) {
 				),
 			),
 		},
+		{
+			name: "without import and empty object",
+			tokens: []token.Token{
+				token.New(token.LBrace, "", types.Location{}),
+				token.New(token.RBrace, "", types.Location{}),
+			},
+			expected: ast.NewAst(
+				ast.NewFile(
+					[]ast.Import{},
+					ast.NewObject(
+						[]ast.Entry{},
+						types.Location{},
+					),
+					types.Location{},
+				),
+			),
+		},
+		{
+			name: "with spreads in object",
+			tokens: []token.Token{
+				token.New(token.LBrace, "", types.Location{}),
+				token.New(token.Ident, "common1", types.Location{}),
+				token.New(token.Spread, "", types.Location{}),
+				token.New(token.Ident, "common2", types.Location{}),
+				token.New(token.Spread, "", types.Location{}),
+				token.New(token.RBrace, "", types.Location{}),
+			},
+			expected: ast.NewAst(
+				ast.NewFile(
+					[]ast.Import{},
+					ast.NewObject(
+						[]ast.Entry{
+							ast.NewSpread(
+								ast.NewVar(
+									[]ast.Ident{
+										ast.NewIdent("common1", types.Location{}),
+									},
+									types.Location{},
+								),
+								types.Location{},
+							),
+							ast.NewSpread(
+								ast.NewVar(
+									[]ast.Ident{
+										ast.NewIdent("common2", types.Location{}),
+									},
+									types.Location{},
+								),
+								types.Location{},
+							),
+						},
+						types.Location{},
+					),
+					types.Location{},
+				),
+			),
+		},
+		{
+			name: "with nested var spreads in object",
+			tokens: []token.Token{
+				token.New(token.LBrace, "", types.Location{}),
+				token.New(token.Ident, "common1", types.Location{}),
+				token.New(token.Dot, "", types.Location{}),
+				token.New(token.Ident, "nested1", types.Location{}),
+				token.New(token.Spread, "", types.Location{}),
+				token.New(token.Ident, "common2", types.Location{}),
+				token.New(token.Dot, "", types.Location{}),
+				token.New(token.Ident, "nested1", types.Location{}),
+				token.New(token.Dot, "", types.Location{}),
+				token.New(token.Ident, "nested2", types.Location{}),
+				token.New(token.Spread, "", types.Location{}),
+				token.New(token.RBrace, "", types.Location{}),
+			},
+			expected: ast.NewAst(
+				ast.NewFile(
+					[]ast.Import{},
+					ast.NewObject(
+						[]ast.Entry{
+							ast.NewSpread(
+								ast.NewVar(
+									[]ast.Ident{
+										ast.NewIdent("common1", types.Location{}),
+										ast.NewIdent("nested1", types.Location{}),
+									},
+									types.Location{},
+								),
+								types.Location{},
+							),
+							ast.NewSpread(
+								ast.NewVar(
+									[]ast.Ident{
+										ast.NewIdent("common2", types.Location{}),
+										ast.NewIdent("nested1", types.Location{}),
+										ast.NewIdent("nested2", types.Location{}),
+									},
+									types.Location{},
+								),
+								types.Location{},
+							),
+						},
+						types.Location{},
+					),
+					types.Location{},
+				),
+			),
+		},
 	}
 
 	for _, tc := range testCases {

@@ -3,9 +3,11 @@ package ast
 import "github.com/atmxlab/atmcfg/internal/types"
 
 type Spread struct {
-	entryNode
+	expressionNode
 	v Var
 }
+
+func (Spread) entryNodeMarker() {}
 
 func (s Spread) Var() Var {
 	return s.v
