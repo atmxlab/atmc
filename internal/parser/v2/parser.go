@@ -261,7 +261,7 @@ func (p *Parser) parseExpression() (expr ast.Expression, err error) {
 	if err = p.require(
 		token.Ident,
 		token.LBrace,
-		token.RBracket,
+		token.LBracket,
 		token.Dollar,
 		token.String,
 		token.Int,
@@ -428,8 +428,6 @@ func (p *Parser) parseEnv() (ast.Env, error) {
 	if err := p.require(token.Ident); err != nil {
 		return ast.Env{}, err
 	}
-
-	p.mover.Next()
 
 	env := ast.NewEnv(
 		ast.NewIdent(

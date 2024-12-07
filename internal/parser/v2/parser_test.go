@@ -379,6 +379,216 @@ func TestParser_Parse(t *testing.T) {
 				),
 			),
 		},
+		{
+			name: "with empty array",
+			tokens: []token.Token{
+				token.New(token.LBrace, "", types.Location{}),
+
+				token.New(token.Ident, "common1", types.Location{}),
+				token.New(token.Colon, "", types.Location{}),
+
+				token.New(token.LBracket, "", types.Location{}),
+				token.New(token.RBracket, "", types.Location{}),
+
+				token.New(token.RBrace, "", types.Location{}),
+			},
+			expected: ast.NewAst(
+				ast.NewFile(
+					[]ast.Import{},
+					ast.NewObject(
+						[]ast.Entry{
+							ast.NewKV(
+								ast.NewIdent("common1", types.Location{}),
+								ast.NewArray(
+									[]ast.Expression{},
+									types.Location{},
+								),
+								types.Location{},
+							),
+						},
+						types.Location{},
+					),
+					types.Location{},
+				),
+			),
+		},
+		{
+			name: "with array with mixed values",
+			tokens: []token.Token{
+				token.New(token.LBrace, "", types.Location{}),
+
+				token.New(token.Ident, "common1", types.Location{}),
+				token.New(token.Colon, "", types.Location{}),
+				token.New(token.LBracket, "", types.Location{}),
+
+				token.New(token.Ident, "nested1", types.Location{}),
+
+				token.New(token.LBrace, "", types.Location{}),
+				token.New(token.Ident, "nested2", types.Location{}),
+				token.New(token.Colon, "", types.Location{}),
+				token.New(token.Int, "123", types.Location{}),
+				token.New(token.RBrace, "", types.Location{}),
+
+				token.New(token.Bool, "false", types.Location{}),
+
+				token.New(token.Dollar, "", types.Location{}),
+				token.New(token.Ident, "ENV_VAR", types.Location{}),
+
+				token.New(token.LBracket, "", types.Location{}),
+
+				token.New(token.Ident, "nested1", types.Location{}),
+
+				token.New(token.LBrace, "", types.Location{}),
+				token.New(token.Ident, "nested2", types.Location{}),
+				token.New(token.Colon, "", types.Location{}),
+				token.New(token.Int, "123", types.Location{}),
+				token.New(token.RBrace, "", types.Location{}),
+
+				token.New(token.Bool, "false", types.Location{}),
+
+				token.New(token.Dollar, "", types.Location{}),
+				token.New(token.Ident, "ENV_VAR", types.Location{}),
+
+				token.New(token.RBracket, "", types.Location{}),
+
+				token.New(token.RBracket, "", types.Location{}),
+
+				token.New(token.RBrace, "", types.Location{}),
+			},
+			expected: ast.NewAst(
+				ast.NewFile(
+					[]ast.Import{},
+					ast.NewObject(
+						[]ast.Entry{
+							ast.NewKV(
+								ast.NewIdent("common1", types.Location{}),
+								ast.NewArray(
+									[]ast.Expression{
+										ast.NewVar(
+											[]ast.Ident{
+												ast.NewIdent("nested1", types.Location{}),
+											},
+											types.Location{},
+										),
+										ast.NewObject(
+											[]ast.Entry{
+												ast.NewKV(
+													ast.NewIdent("nested2", types.Location{}),
+													testast.MustNewInt(t, "123"),
+													types.Location{},
+												),
+											},
+											types.Location{},
+										),
+										testast.MustNewBool(t, "false"),
+										ast.NewEnv(
+											ast.NewIdent("ENV_VAR", types.Location{}),
+											types.Location{},
+										),
+
+										ast.NewArray(
+											[]ast.Expression{
+												ast.NewVar(
+													[]ast.Ident{
+														ast.NewIdent("nested1", types.Location{}),
+													},
+													types.Location{},
+												),
+												ast.NewObject(
+													[]ast.Entry{
+														ast.NewKV(
+															ast.NewIdent("nested2", types.Location{}),
+															testast.MustNewInt(t, "123"),
+															types.Location{},
+														),
+													},
+													types.Location{},
+												),
+												testast.MustNewBool(t, "false"),
+												ast.NewEnv(
+													ast.NewIdent("ENV_VAR", types.Location{}),
+													types.Location{},
+												),
+											},
+											types.Location{},
+										),
+									},
+									types.Location{},
+								),
+								types.Location{},
+							),
+						},
+						types.Location{},
+					),
+					types.Location{},
+				),
+			),
+		},
+		{
+			name: "array with spreads",
+			tokens: []token.Token{
+				token.New(token.LBrace, "", types.Location{}),
+
+				token.New(token.Ident, "common1", types.Location{}),
+				token.New(token.Colon, "", types.Location{}),
+
+				token.New(token.LBracket, "", types.Location{}),
+
+				token.New(token.Ident, "common1", types.Location{}),
+				token.New(token.Spread, "", types.Location{}),
+
+				token.New(token.Ident, "common2", types.Location{}),
+				token.New(token.Dot, "", types.Location{}),
+				token.New(token.Ident, "nested1", types.Location{}),
+				token.New(token.Spread, "", types.Location{}),
+
+				token.New(token.String, `"test test"`, types.Location{}),
+
+				token.New(token.RBracket, "", types.Location{}),
+
+				token.New(token.RBrace, "", types.Location{}),
+			},
+			expected: ast.NewAst(
+				ast.NewFile(
+					[]ast.Import{},
+					ast.NewObject(
+						[]ast.Entry{
+							ast.NewKV(
+								ast.NewIdent("common1", types.Location{}),
+								ast.NewArray(
+									[]ast.Expression{
+										ast.NewSpread(
+											ast.NewVar(
+												[]ast.Ident{
+													ast.NewIdent("common1", types.Location{}),
+												},
+												types.Location{},
+											),
+											types.Location{},
+										),
+										ast.NewSpread(
+											ast.NewVar(
+												[]ast.Ident{
+													ast.NewIdent("common2", types.Location{}),
+													ast.NewIdent("nested1", types.Location{}),
+												},
+												types.Location{},
+											),
+											types.Location{},
+										),
+										ast.NewString(`"test test"`, types.Location{}),
+									},
+									types.Location{},
+								),
+								types.Location{},
+							),
+						},
+						types.Location{},
+					),
+					types.Location{},
+				),
+			),
+		},
 	}
 
 	for _, tc := range testCases {
