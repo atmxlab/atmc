@@ -133,15 +133,17 @@ func (p *Parser) parseSpread() (ast.Spread, error) {
 		return ast.Spread{}, err
 	}
 
-	p.mover.Next()
-
-	return ast.NewSpread(
+	s := ast.NewSpread(
 		v,
 		types.NewLocation(
 			v.Location().Start(),
 			p.mover.Token().Location().End(),
 		),
-	), nil
+	)
+
+	p.mover.Next()
+
+	return s, nil
 }
 
 func (p *Parser) parseVar() (ast.Var, error) {

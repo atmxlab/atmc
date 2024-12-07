@@ -9,7 +9,7 @@ type Env struct {
 
 func NewEnv(name Ident, loc types.Location) Env {
 	e := Env{name: name}
-	e.loc = loc
+	e.loc = loc // TODO:  можно вычислять!
 
 	return e
 }
