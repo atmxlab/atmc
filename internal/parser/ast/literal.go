@@ -9,24 +9,30 @@ import (
 
 type Int = literalNode[int64]
 
-func NewInt(int string) (Int, error) {
-	i, err := strconv.ParseInt(int, 10, 64)
+func NewInt(int string, loc types.Location) (Int, error) {
+	value, err := strconv.ParseInt(int, 10, 64)
 	if err != nil {
 		return Int{}, errors.Wrap(err, "error parsing integer")
 	}
 
-	return Int{value: i}, nil
+	i := Int{value: value}
+	i.loc = loc
+
+	return i, nil
 }
 
 type Float = literalNode[float64]
 
-func NewFloat(float64 string) (Float, error) {
-	fl, err := strconv.ParseFloat(float64, 10)
+func NewFloat(float64 string, loc types.Location) (Float, error) {
+	value, err := strconv.ParseFloat(float64, 10)
 	if err != nil {
 		return Float{}, errors.Wrap(err, "error parsing float")
 	}
 
-	return Float{value: fl}, nil
+	f := Float{value: value}
+	f.loc = loc
+
+	return f, nil
 }
 
 type String = literalNode[string]

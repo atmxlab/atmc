@@ -9,6 +9,7 @@ import (
 var (
 	ErrTokenMismatch   = errors.New("token mismatch")
 	ErrUnexpectedToken = errors.New("unexpected token")
+	ErrExpectedNode    = errors.New("expected node")
 )
 
 func NewErrTokenMismatch(expectedTokens ...token.Type) error {
@@ -32,5 +33,13 @@ func NewErrUnexpectedToken(expectedTokens ...token.Type) error {
 		ErrUnexpectedToken,
 		"expected tokens: %v",
 		expectedTokensStr,
+	)
+}
+
+func NewErrExpectedNode(expectedNodes ...string) error {
+	return errors.Wrapf(
+		ErrExpectedNode,
+		"expected nodes: %v",
+		expectedNodes,
 	)
 }

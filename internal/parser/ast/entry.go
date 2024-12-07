@@ -1,5 +1,7 @@
 package ast
 
+import "github.com/atmxlab/atmcfg/internal/types"
+
 // TODO: придумать название
 
 type EntryNode struct {
@@ -16,6 +18,9 @@ func (e EntryNode) Value() Expression {
 	return e.value
 }
 
-func NewEntryNode(entryNode entryNode, key Ident, value Expression) EntryNode {
-	return EntryNode{entryNode: entryNode, key: key, value: value}
+func NewEntryNode(key Ident, value Expression, loc types.Location) EntryNode {
+	e := EntryNode{key: key, value: value}
+	e.loc = loc
+
+	return e
 }

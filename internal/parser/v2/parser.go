@@ -107,7 +107,7 @@ func (p *Parser) parseObject() (ast.Object, error) {
 	p.mover.Next()
 
 	spreads := make([]ast.Spread, 0)
-	entries := make([]ast.Entry, 0)
+	entries := make([]ast.EntryNode, 0)
 
 	for {
 		entry, err := p.parseEntry()
@@ -213,4 +213,218 @@ func (p *Parser) parseVar() (ast.Var, error) {
 			idents[len(idents)-1].Location().End(),
 		),
 	), nil
+}
+
+func (p *Parser) parseEntry() (ast.EntryNode, error) {
+	p.mover.SavePoint()
+	defer p.mover.RemoveSavePoint()
+
+	if err := p.check(token.Ident); err != nil {
+		return ast.EntryNode{}, err
+	}
+
+	key := ast.NewIdent(
+		p.mover.Token().Value().String(),
+		types.NewLocation(
+			p.mover.Token().Location().Start(),
+			p.mover.Token().Location().End(),
+		),
+	)
+
+	p.mover.Next()
+
+	if err := p.check(token.Colon); err != nil {
+		return ast.EntryNode{}, err
+	}
+
+	p.mover.Next()
+
+	expr, err := p.parseExpression()
+	switch {
+	case err == nil:
+	case errors.Is(err, ErrTokenMismatch):
+		return ast.EntryNode{}, NewErrExpectedNode("expression")
+	default:
+		return ast.EntryNode{}, errors.Wrap(err, "parse expression")
+	}
+
+	return ast.NewEntryNode(
+		key,
+		expr,
+		types.NewLocation(
+			key.Location().Start(),
+			expr.Location().End(),
+		),
+	), nil
+}
+
+func (p *Parser) parseExpression() (expr ast.Expression, err error) {
+	if err = p.require(
+		token.Ident,
+		token.LBrace,
+		token.RBracket,
+		token.Dollar,
+		token.String,
+		token.Int,
+		token.Float,
+		token.Bool,
+	); err != nil {
+		return nil, err
+	}
+
+	defer p.mover.Next()
+
+	switch p.mover.Token().Type() {
+	case token.Ident:
+		expr, err = p.parseVar()
+		if err != nil {
+			return nil, err
+		}
+
+		return expr, nil
+	case token.Dollar:
+		expr, err = p.parseEnv()
+		if err != nil {
+			return nil, err
+		}
+
+		return expr, nil
+	case token.LBrace:
+		expr, err = p.parseObject()
+		if err != nil {
+			return nil, err
+		}
+
+		return expr, nil
+
+	case token.LBracket:
+		expr, err = p.parseArray()
+		if err != nil {
+			return nil, err
+		}
+
+		return expr, nil
+
+	case token.String:
+		expr, err = p.parseString()
+		if err != nil {
+			return nil, err
+		}
+
+		return expr, nil
+
+	case token.Float:
+		expr, err = p.parseFloat()
+		if err != nil {
+			return nil, err
+		}
+
+		return expr, nil
+
+	case token.Int:
+		expr, err = p.parseInt()
+		if err != nil {
+			return nil, err
+		}
+
+		return expr, nil
+
+	case token.Bool:
+		expr, err = p.parseBool()
+		if err != nil {
+			return nil, err
+		}
+
+		return expr, nil
+	default:
+		return nil, NewErrUnexpectedToken()
+	}
+}
+
+func (p *Parser) parseString() (ast.String, error) {
+	if err := p.require(token.String); err != nil {
+		return ast.String{}, err
+	}
+
+	return ast.NewString(
+		p.mover.Token().Value().String(),
+		p.mover.Token().Location(),
+	), nil
+}
+
+func (p *Parser) parseBool() (ast.Bool, error) {
+	if err := p.require(token.Bool); err != nil {
+		return ast.Bool{}, err
+	}
+
+	b, err := ast.NewBool(
+		p.mover.Token().Value().String(),
+		p.mover.Token().Location(),
+	)
+	if err != nil {
+		return ast.Bool{}, errors.Wrap(err, "parse bool")
+	}
+
+	return b, nil
+}
+
+func (p *Parser) parseInt() (ast.Int, error) {
+	if err := p.require(token.Int); err != nil {
+		return ast.Int{}, err
+	}
+
+	i, err := ast.NewInt(
+		p.mover.Token().Value().String(),
+		p.mover.Token().Location(),
+	)
+	if err != nil {
+		return ast.Int{}, errors.Wrap(err, "parse int")
+	}
+
+	return i, nil
+}
+
+func (p *Parser) parseFloat() (ast.Float, error) {
+	if err := p.require(token.Float); err != nil {
+		return ast.Float{}, err
+	}
+
+	f, err := ast.NewFloat(
+		p.mover.Token().Value().String(),
+		p.mover.Token().Location(),
+	)
+	if err != nil {
+		return ast.Float{}, errors.Wrap(err, "parse float")
+	}
+
+	return f, nil
+}
+
+func (p *Parser) parseEnv() (ast.Env, error) {
+	if err := p.require(token.Dollar); err != nil {
+		return ast.Env{}, err
+	}
+
+	dollarToken := p.mover.Token()
+
+	p.mover.Next()
+
+	if err := p.require(token.Ident); err != nil {
+		return ast.Env{}, err
+	}
+
+	return ast.NewEnv(
+		ast.NewIdent(
+			p.mover.Token().Value().String(),
+			p.mover.Token().Location(),
+		),
+		types.NewLocation(
+			dollarToken.Location().Start(),
+			p.mover.Token().Location().End(),
+		),
+	), nil
+}
+
+func (p *Parser) parseArray() (ast.Array, error) {
+	return ast.Array{}, nil
 }
