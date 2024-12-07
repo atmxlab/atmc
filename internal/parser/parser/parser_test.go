@@ -1,10 +1,10 @@
-package v2_test
+package parser_test
 
 import (
 	"testing"
 
 	"github.com/atmxlab/atmcfg/internal/parser/ast"
-	v2 "github.com/atmxlab/atmcfg/internal/parser/v2"
+	parser "github.com/atmxlab/atmcfg/internal/parser/parser"
 	"github.com/atmxlab/atmcfg/internal/test"
 	"github.com/atmxlab/atmcfg/internal/test/testast"
 	"github.com/atmxlab/atmcfg/internal/types"
@@ -597,7 +597,7 @@ func TestParser_Parse(t *testing.T) {
 
 			mover := test.NewTokenMover(t, tc.tokens)
 
-			p := v2.NewParser(mover)
+			p := parser.NewParser(mover)
 
 			a, err := p.Parse()
 			require.NoError(t, err)

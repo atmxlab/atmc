@@ -7,7 +7,7 @@ func Wrap(err error, msg string) error {
 		return nil
 	}
 
-	return fmt.Errorf("%w: %e", err, msg)
+	return fmt.Errorf("%w: %s", err, msg)
 }
 
 func Wrapf(err error, msg string, a ...any) error {

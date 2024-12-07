@@ -1,4 +1,4 @@
-package v2
+package parser
 
 import (
 	"github.com/atmxlab/atmcfg/internal/parser/ast"
