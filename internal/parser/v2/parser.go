@@ -9,8 +9,8 @@ import (
 
 type TokenMover interface {
 	Token() token.Token
-	Next() TokenMover
-	Prev() TokenMover
+	Next()
+	Prev()
 	IsEmpty() bool
 	SavePoint()
 	RemoveSavePoint()
@@ -106,44 +106,20 @@ func (p *Parser) parseObject() (ast.Object, error) {
 
 	p.mover.Next()
 
-	spreads := make([]ast.Spread, 0)
-	kvs := make([]ast.KV, 0)
+	entries := make([]ast.Entry, 0)
 
-	for {
+	for !p.match(token.RBrace) {
 		entry, err := p.parseEntry()
-		switch {
-		case err == nil:
-			kvs = append(kvs, entry)
-			continue
-		case errors.Is(err, ErrTokenMismatch):
-		default:
-			return ast.Object{}, errors.Wrap(err, "parse entry")
+		if err != nil {
+			return ast.Object{}, err
 		}
-
-		spread, err := p.parseSpread()
-		switch {
-		case err == nil:
-			spreads = append(spreads, spread)
-			continue
-		case errors.Is(err, ErrTokenMismatch):
-		default:
-			return ast.Object{}, errors.Wrap(err, "parse spread")
-		}
-
-		break
-	}
-
-	p.mover.Next()
-
-	if err := p.require(token.RBrace); err != nil {
-		return ast.Object{}, errors.Wrap(err, "object expected rbrace in the object end position")
+		entries = append(entries, entry)
 	}
 
 	end := p.mover.Token().Location().End()
 
 	return ast.NewObject(
-		spreads,
-		kvs,
+		entries,
 		types.NewLocation(start, end),
 	), nil
 }
@@ -215,7 +191,25 @@ func (p *Parser) parseVar() (ast.Var, error) {
 	), nil
 }
 
-func (p *Parser) parseEntry() (ast.KV, error) {
+func (p *Parser) parseEntry() (ast.Entry, error) {
+	kv, err := p.parseKV()
+	switch {
+	case err == nil:
+		return kv, nil
+	case errors.Is(err, ErrTokenMismatch):
+	default:
+		return nil, errors.Wrap(err, "parse entry")
+	}
+
+	spread, err := p.parseSpread()
+	if err != nil {
+		return nil, errors.Wrap(err, "parse spread")
+	}
+
+	return spread, nil
+}
+
+func (p *Parser) parseKV() (ast.KV, error) {
 	p.mover.SavePoint()
 	defer p.mover.RemoveSavePoint()
 

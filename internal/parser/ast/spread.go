@@ -3,7 +3,7 @@ package ast
 import "github.com/atmxlab/atmcfg/internal/types"
 
 type Spread struct {
-	statementNode
+	entryNode
 	v Var
 }
 
