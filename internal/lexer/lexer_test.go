@@ -212,9 +212,7 @@ func TestLexer_Tokenize_TokenTypes(t *testing.T) {
 			expectedTypes: []token.Type{
 				token.LBracket,
 				token.Int,
-				token.Comma,
 				token.Int,
-				token.Comma,
 				token.Int,
 				token.RBracket,
 			},
@@ -254,7 +252,6 @@ func TestLexer_Tokenize_TokenTypes(t *testing.T) {
 				token.Colon,
 				token.LBracket,
 				token.String,
-				token.Comma,
 				token.String,
 				token.RBracket,
 				token.RBrace,

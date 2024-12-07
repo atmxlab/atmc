@@ -38,7 +38,7 @@ func (l *Lexer) Tokenize() ([]token.Token, error) {
 			matched = true
 
 			switch t {
-			case token.WS:
+			case token.WS, token.Comma:
 				// Ничего не делаем. Просто игнорируем пробелы.
 			case token.EOL:
 				l.location = l.location.SetEnd(
