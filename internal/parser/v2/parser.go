@@ -88,9 +88,9 @@ func (p *Parser) parseImport() (ast.Import, error) {
 
 	return ast.NewImport(
 		// TODO: тут нужно решить проблему локации токенов. У них тоже должна быть локация.
-		ast.NewIdent(importName.Value().String(), types.NewLocation(importName.Position(), importName.Position())),
+		ast.NewIdent(importName.Value().String(), importName.Location()),
 		ast.NewPath(importPath.Value().String()),
-		types.NewLocation(importName.Position(), importPath.Position()),
+		types.NewLocation(importName.Location().Start(), importPath.Location().End()),
 	), nil
 }
 

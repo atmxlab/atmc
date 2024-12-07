@@ -41,6 +41,8 @@ func (t Type) String() string {
 		return "ident"
 	case Path:
 		return "path"
+	case Dollar:
+		return "dollar"
 	default:
 		return fmt.Sprintf("undefined token type: %d", t)
 	}
@@ -49,6 +51,7 @@ func (t Type) String() string {
 const (
 	WS Type = iota
 	EOL
+	Dollar
 	LBrace
 	RBrace
 	LBracket
@@ -82,6 +85,7 @@ var typeRegexps = map[Type]*regexp.Regexp{
 	String:   regexp.MustCompile(`^"(?:[^\\"]|\\.|\\\\)*"`),
 	Ident:    regexp.MustCompile("^[a-zA-Z_][a-zA-Z0-9_]*"),
 	Path:     regexp.MustCompile("^(?:/|\\./)[a-zA-Z0-9._/-]+"),
+	Dollar:   regexp.MustCompile("^\\$"),
 }
 
 func (t Type) Regexp() *regexp.Regexp {
@@ -109,6 +113,7 @@ func OrderedTokenTypes() []Type {
 		Spread,
 		Comma,
 		Dot,
+		Dollar,
 		Colon,
 		Ident,
 	}

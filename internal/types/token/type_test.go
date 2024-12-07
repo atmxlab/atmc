@@ -307,6 +307,36 @@ func TestType_Dot_Regexp(t *testing.T) {
 	}
 }
 
+func TestType_Dollar_Regexp(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name     string
+		input    string
+		expected []int
+	}{
+		{
+			name:     "start with",
+			input:    `$.,,,,test{}[][]231...:sda2131from||||import`,
+			expected: []int{0, 1},
+		},
+		{
+			name:     "not start with",
+			input:    `[.,$$,[][][test{}$[][1,2,3$,4]231:sda2131from||||import...,`,
+			expected: nil,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			indexes := token.Dollar.Regexp().FindStringIndex(tc.input)
+			require.Equal(t, tc.expected, indexes)
+		})
+	}
+}
+
 func TestType_Colon_Regexp(t *testing.T) {
 	t.Parallel()
 

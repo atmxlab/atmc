@@ -8,18 +8,18 @@ import (
 type Lexer struct {
 	input    string
 	tokens   []token.Token
-	position *types.Position
+	location types.Location
 }
 
-func (l *Lexer) Position() *types.Position {
-	return l.position
+func (l *Lexer) Location() types.Location {
+	return l.location
 }
 
 func New(input string) *Lexer {
 	return &Lexer{
 		input:    input,
 		tokens:   make([]token.Token, 0),
-		position: types.NewInitialPosition(),
+		location: types.NewInitialLocation(),
 	}
 }
 
@@ -41,8 +41,14 @@ func (l *Lexer) Tokenize() ([]token.Token, error) {
 			case token.WS:
 				// Ничего не делаем. Просто игнорируем пробелы.
 			case token.EOL:
-				l.position.IncrLine()
-				l.position.ResetColumn()
+				l.location = l.location.SetEnd(
+					l.location.End().
+						IncrLine().
+						ResetColumn(),
+				)
+				l.location = l.location.SetStart(
+					l.location.End(),
+				)
 			default:
 				l.addToken(t, value)
 			}
@@ -51,7 +57,7 @@ func (l *Lexer) Tokenize() ([]token.Token, error) {
 		}
 
 		if !matched {
-			return nil, unexpectedTokenError(l.position)
+			return nil, unexpectedTokenError(l.location.End())
 		}
 	}
 
@@ -62,7 +68,7 @@ func (l *Lexer) addToken(t token.Type, value string) {
 	tok := token.New(
 		t,
 		token.Value(value),
-		l.position.Clone(),
+		l.location,
 	)
 
 	l.tokens = append(l.tokens, tok)
@@ -79,8 +85,14 @@ func (l *Lexer) find(t token.Type) (value string, exists bool) {
 	value = l.input[:end]
 	l.input = l.input[end:]
 
-	l.position.AddPos(uint(end))
-	l.position.AddColumn(uint(end))
+	l.location = l.location.SetStart(
+		l.location.End(),
+	)
+	l.location = l.location.SetEnd(
+		l.location.End().
+			AddPos(uint(end)).
+			AddColumn(uint(end)),
+	)
 
 	return value, true
 }

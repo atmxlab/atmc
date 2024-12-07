@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/atmxlab/atmcfg/internal/parser/ast"
+	"github.com/atmxlab/atmcfg/internal/types"
 )
 
 func MustNewInt(t *testing.T, str string) ast.Int {
@@ -25,7 +26,7 @@ func MustNewFloat(t *testing.T, str string) ast.Float {
 }
 
 func MustNewBool(t *testing.T, str string) ast.Bool {
-	i, err := ast.NewBool(str)
+	i, err := ast.NewBool(str, types.NewInitialLocation())
 	if err != nil {
 		t.Fatal(err)
 	}

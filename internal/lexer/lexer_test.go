@@ -26,12 +26,18 @@ func TestLexer_Tokenize_Tokens(t *testing.T) {
 				token.New(
 					token.Ident,
 					"common",
-					types.NewPosition(2, 10, 11),
+					types.NewLocation(
+						types.NewPosition(2, 4, 5),
+						types.NewPosition(2, 10, 11),
+					),
 				),
 				token.New(
 					token.Path,
 					"./common.atmx",
-					types.NewPosition(2, 24, 25),
+					types.NewLocation(
+						types.NewPosition(2, 11, 12),
+						types.NewPosition(2, 24, 25),
+					),
 				),
 			},
 		},
@@ -50,26 +56,32 @@ func TestLexer_Tokenize_Tokens(t *testing.T) {
 	}
 }
 
-func TestLexer_Tokenize_LexerPosition(t *testing.T) {
+func TestLexer_Tokenize_LexerLocation(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
 		name        string
 		input       string
-		expectedPos *types.Position
+		expectedPos types.Location
 	}{
 		{
 			name: "2, 36, 37",
 			input: `
 				import common from ./common.atmx`,
-			expectedPos: types.NewPosition(2, 36, 37),
+			expectedPos: types.NewLocation(
+				types.NewPosition(2, 23, 24),
+				types.NewPosition(2, 36, 37),
+			),
 		},
 		{
 			name: "3, 0, 38",
 			input: `
 				import common from ./common.atmx
 `,
-			expectedPos: types.NewPosition(3, 0, 38),
+			expectedPos: types.NewLocation(
+				types.NewPosition(3, 0, 38),
+				types.NewPosition(3, 0, 38),
+			),
 		},
 		{
 			name: "7, 0, 42",
@@ -80,7 +92,10 @@ func TestLexer_Tokenize_LexerPosition(t *testing.T) {
 
 
 `,
-			expectedPos: types.NewPosition(7, 0, 42),
+			expectedPos: types.NewLocation(
+				types.NewPosition(7, 0, 42),
+				types.NewPosition(7, 0, 42),
+			),
 		},
 		{
 			name: "7, 0, 42",
@@ -89,11 +104,14 @@ func TestLexer_Tokenize_LexerPosition(t *testing.T) {
 
 				import common from ./common.atmx
 
-			
+
 													import
-			
+
 			`,
-			expectedPos: types.NewPosition(9, 3, 72),
+			expectedPos: types.NewLocation(
+				types.NewPosition(9, 2, 65),
+				types.NewPosition(9, 3, 66),
+			),
 		},
 	}
 
@@ -105,7 +123,7 @@ func TestLexer_Tokenize_LexerPosition(t *testing.T) {
 
 			_, err := l.Tokenize()
 			require.NoError(t, err)
-			require.Equal(t, tc.expectedPos, l.Position())
+			require.Equal(t, tc.expectedPos, l.Location())
 		})
 	}
 }
