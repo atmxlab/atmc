@@ -2,8 +2,6 @@ package ast
 
 import "github.com/atmxlab/atmcfg/internal/types"
 
-// TODO: придумать название
-
 type KV struct {
 	entryNode
 	key   Ident
