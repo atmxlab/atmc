@@ -5,8 +5,8 @@ import (
 
 	"github.com/atmxlab/atmcfg/internal/lexer"
 	"github.com/atmxlab/atmcfg/internal/lexer/tokenmover"
+	"github.com/atmxlab/atmcfg/internal/parser"
 	"github.com/atmxlab/atmcfg/internal/parser/ast"
-	"github.com/atmxlab/atmcfg/internal/parser/parser"
 	"github.com/atmxlab/atmcfg/internal/test/testast"
 	"github.com/atmxlab/atmcfg/internal/types"
 	"github.com/stretchr/testify/require"

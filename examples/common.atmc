@@ -10,7 +10,7 @@
     rates: {
         max: 12.44
         min: 6.11231313
-    },
+    }
     kafkaTopics: [
         {
             name: "main_topic"
