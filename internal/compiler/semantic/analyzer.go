@@ -1,13 +1,10 @@
 package semantic
 
 import (
+	"github.com/atmxlab/atmcfg/internal/compiler"
 	"github.com/atmxlab/atmcfg/internal/parser/ast"
 	"github.com/atmxlab/atmcfg/pkg/errors"
 )
-
-type Ast interface {
-	Inspect(func(node ast.Node) error) error
-}
 
 type Analyzer struct {
 	scope *scope
@@ -17,7 +14,7 @@ func NewAnalyzer() *Analyzer {
 	return &Analyzer{scope: newScope()}
 }
 
-func (ar *Analyzer) Analyze(a Ast) error {
+func (ar *Analyzer) Analyze(a compiler.Ast) error {
 	err := a.Inspect(ar.Visit)
 	if err != nil {
 		return errors.Wrap(err, "inspect")

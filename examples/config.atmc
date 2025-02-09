@@ -1,5 +1,5 @@
-import common from ./common.atmc
-import production from ./production.atmc
+common ./common.atmc
+production ./production.atmc
 
 {
     common...
