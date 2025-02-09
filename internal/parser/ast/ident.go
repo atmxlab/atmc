@@ -7,11 +7,10 @@ import (
 
 type ident struct {
 	identNode
-	string
 }
 
 func NewIdent(string string, loc types.Location) Ident {
-	i := ident{string: string}
+	i := ident{identNode{string: string}}
 	i.loc = loc
 
 	return i

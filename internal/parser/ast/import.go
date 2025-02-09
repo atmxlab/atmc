@@ -13,11 +13,10 @@ type Import struct {
 
 type Path struct {
 	identNode
-	string
 }
 
 func NewPath(string string, loc types.Location) Path {
-	p := Path{string: string}
+	p := Path{identNode{string: string}}
 	p.loc = loc
 
 	return p

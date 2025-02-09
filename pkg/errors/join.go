@@ -6,19 +6,19 @@ type Joiner struct {
 	err error
 }
 
-func NewJoiner() Joiner {
-	return Joiner{err: nil}
+func NewJoiner() *Joiner {
+	return &Joiner{err: nil}
 }
 
-func (j Joiner) Error() string {
+func (j *Joiner) Error() string {
 	return j.err.Error()
 }
 
-func (j Joiner) Err() error {
+func (j *Joiner) Err() error {
 	return j.err
 }
 
-func (j Joiner) Join(errs ...error) {
+func (j *Joiner) Join(errs ...error) {
 	errs = append(errs, j.err)
 	j.err = Join(errs...)
 }

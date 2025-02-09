@@ -10,6 +10,10 @@ type scope struct {
 	variables map[string]*variable
 }
 
+func newScope() *scope {
+	return &scope{variables: make(map[string]*variable)}
+}
+
 type variable struct {
 	name string
 	refs uint
@@ -52,7 +56,7 @@ func (s *scope) checkVariableRefs() error {
 
 	for _, v := range s.variables {
 		if !v.hasRefs() {
-			j.Join(errors.Newf("unuse variable: %s", v.name))
+			j.Join(errors.Wrapf(ErrUnusedVariable, "unuse variable: %s", v.name))
 		}
 	}
 
