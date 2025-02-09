@@ -1,6 +1,9 @@
 package ast
 
-import "github.com/atmxlab/atmcfg/internal/types"
+import (
+	"github.com/atmxlab/atmcfg/internal/types"
+	"github.com/atmxlab/atmcfg/pkg/errors"
+)
 
 type File struct {
 	node
@@ -30,4 +33,18 @@ func NewFile(imports []Import, object Object) File {
 	f.loc = types.NewLocation(start, end)
 
 	return f
+}
+
+func (f File) inspect(handler func(node Node) error) error {
+	for _, imp := range f.imports {
+		if err := imp.inspect(handler); err != nil {
+			return errors.Wrapf(err, "inspecting import node")
+		}
+	}
+
+	if err := f.object.inspect(handler); err != nil {
+		return errors.Wrapf(err, "inspecting object node")
+	}
+
+	return nil
 }

@@ -8,6 +8,7 @@ import (
 
 type Node interface {
 	Location() types.Location
+	inspect(func(Node) error) error
 }
 
 type Entry interface {

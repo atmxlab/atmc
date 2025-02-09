@@ -44,7 +44,7 @@ func NewString(string string, loc types.Location) String {
 	return s
 }
 
-type Bool literalNode[bool]
+type Bool = literalNode[bool]
 
 func NewBool(bool string, loc types.Location) (Bool, error) {
 	switch bool {

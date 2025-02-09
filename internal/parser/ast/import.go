@@ -1,6 +1,9 @@
 package ast
 
-import "github.com/atmxlab/atmcfg/internal/types"
+import (
+	"github.com/atmxlab/atmcfg/internal/types"
+	"github.com/atmxlab/atmcfg/pkg/errors"
+)
 
 type Import struct {
 	statementNode
@@ -39,4 +42,12 @@ func (i Import) Path() Path {
 
 func (i Import) Name() Ident {
 	return i.name
+}
+
+func (i Import) inspect(handler func(node Node) error) error {
+	if err := handler(i); err != nil {
+		return errors.Wrap(err, "inspect Import node")
+	}
+
+	return nil
 }

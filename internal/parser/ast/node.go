@@ -1,6 +1,9 @@
 package ast
 
-import "github.com/atmxlab/atmcfg/internal/types"
+import (
+	"github.com/atmxlab/atmcfg/internal/types"
+	"github.com/atmxlab/atmcfg/pkg/errors"
+)
 
 type node struct {
 	loc types.Location
@@ -49,4 +52,12 @@ func (l literalNode[T]) literalNodeMarker() {}
 
 func (l literalNode[T]) Value() T {
 	return l.value
+}
+
+func (l literalNode[T]) inspect(handler func(node Node) error) error {
+	if err := handler(l); err != nil {
+		return errors.Wrap(err, `failed to inspect literal node`)
+	}
+
+	return nil
 }

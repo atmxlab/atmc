@@ -1,6 +1,9 @@
 package ast
 
-import "github.com/atmxlab/atmcfg/internal/types"
+import (
+	"github.com/atmxlab/atmcfg/internal/types"
+	"github.com/atmxlab/atmcfg/pkg/errors"
+)
 
 type KV struct {
 	entryNode
@@ -8,12 +11,12 @@ type KV struct {
 	value Expression
 }
 
-func (e KV) Key() Ident {
-	return e.key
+func (kv KV) Key() Ident {
+	return kv.key
 }
 
-func (e KV) Value() Expression {
-	return e.value
+func (kv KV) Value() Expression {
+	return kv.value
 }
 
 func NewKV(key Ident, value Expression) KV {
@@ -24,4 +27,16 @@ func NewKV(key Ident, value Expression) KV {
 	)
 
 	return e
+}
+
+func (kv KV) inspect(handler func(node Node) error) error {
+	if err := handler(kv); err != nil {
+		return errors.Wrap(err, `failed to inspect key value`)
+	}
+
+	if err := kv.value.inspect(handler); err != nil {
+		return errors.Wrap(err, `failed to inspect expression in key value`)
+	}
+
+	return nil
 }

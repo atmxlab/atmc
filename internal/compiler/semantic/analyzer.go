@@ -6,11 +6,7 @@ import (
 )
 
 type Ast interface {
-	Inspect(Visitor) error
-}
-
-type Visitor interface {
-	Visit(node ast.Node) error
+	Inspect(func(node ast.Node) error) error
 }
 
 type Analyzer struct {
@@ -18,7 +14,7 @@ type Analyzer struct {
 }
 
 func (ar Analyzer) Analyze(a Ast) error {
-	err := a.Inspect(ar)
+	err := a.Inspect(ar.Visit)
 	if err != nil {
 		return errors.Wrap(err, "inspect")
 	}
@@ -38,10 +34,6 @@ func (ar Analyzer) Visit(node ast.Node) error {
 		ar.scope.addVariable(n.Name().String())
 	case *ast.Object:
 	case *ast.Spread:
-		err := ar.checkVar(n.Var())
-		if err != nil {
-			return errors.Wrap(err, "check spread variable")
-		}
 	case *ast.KV:
 	case *ast.Array:
 	case *ast.Var:
@@ -63,12 +55,12 @@ func (ar Analyzer) Visit(node ast.Node) error {
 
 func (ar Analyzer) checkVar(v ast.Var) error {
 	if len(v.Path()) == 0 {
-		return errors.New("invalid spread node") // TODO: нормально возвращать ошибку (с доп информацией)
+		return errors.Newf("invalid variable. variable path is empty") // TODO: нормально возвращать ошибку (с доп информацией)
 	}
 	firstPartFromVarPath := v.Path()[0]
 
 	if !ar.scope.hasVariable(firstPartFromVarPath.String()) {
-		return errors.New("invalid spread node. variable not found")
+		return errors.New("variable not found")
 	}
 
 	ar.scope.incrRef(firstPartFromVarPath.String())
