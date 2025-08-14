@@ -13,26 +13,26 @@ type Node interface {
 
 type Entry interface {
 	Node
-	entryNodeMarker()
+	isEntry()
 }
 
 type Ident interface {
 	Node
 	fmt.Stringer
-	identNodeMarker()
+	isIdent()
 }
 
 type Literal interface {
 	Node
-	literalNodeMarker()
+	isLiteral()
 }
 
 type Expression interface {
 	Node
-	expressionNodeMarker()
+	isExpression()
 }
 
 type Statement interface {
 	Node
-	statementNodeMarker()
+	isStatement()
 }

@@ -17,7 +17,7 @@ type entryNode struct {
 	node
 }
 
-func (entryNode) entryNodeMarker() {}
+func (entryNode) isEntry() {}
 
 type identNode struct {
 	node
@@ -28,27 +28,27 @@ func (i identNode) String() string {
 	return i.string
 }
 
-func (identNode) identNodeMarker() {}
+func (identNode) isIdent() {}
 
 type statementNode struct {
 	node
 	test string
 }
 
-func (statementNode) statementNodeMarker() {}
+func (statementNode) isStatement() {}
 
 type expressionNode struct {
 	node
 }
 
-func (expressionNode) expressionNodeMarker() {}
+func (expressionNode) isExpression() {}
 
 type literalNode[T any] struct {
 	expressionNode
 	value T
 }
 
-func (l literalNode[T]) literalNodeMarker() {}
+func (l literalNode[T]) isLiteral() {}
 
 func (l literalNode[T]) Value() T {
 	return l.value

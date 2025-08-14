@@ -10,7 +10,7 @@ type Spread struct {
 	v Var
 }
 
-func (Spread) entryNodeMarker() {}
+func (Spread) isEntry() {}
 
 func (s Spread) Var() Var {
 	return s.v

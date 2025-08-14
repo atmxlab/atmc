@@ -13,5 +13,9 @@ func NewAst(root File) Ast {
 }
 
 func (a Ast) Inspect(handler func(node Node) error) error {
-	return a.root.inspect(handler)
+	return a.Root().inspect(handler)
+}
+
+func (a Ast) Imports() []Import {
+	return a.Root().Imports()
 }
