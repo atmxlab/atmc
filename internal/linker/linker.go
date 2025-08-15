@@ -160,6 +160,8 @@ func (c *Linker) linkKV(scp scope, kv ast.KV) (linkedast.KV, error) {
 		}
 
 		value = node
+	case ast.Env:
+		value = linkedast.NewString(c.getEnv(v.Name().String()))
 	case ast.Bool:
 		value = linkedast.NewBool(v.Value())
 	case ast.String:
@@ -234,6 +236,8 @@ func (c *Linker) linkArray(scp scope, array ast.Array) (linkedast.Array, error) 
 			}
 
 			elems = append(elems, node)
+		case ast.Env:
+			elems = append(elems, linkedast.NewString(c.getEnv(v.Name().String())))
 		case ast.Bool:
 			elems = append(elems, linkedast.NewBool(v.Value()))
 		case ast.String:
@@ -264,4 +268,8 @@ func (c *Linker) findVariableExp(scp scope, v ast.Var) (linkedast.Expression, er
 	}
 
 	return node, nil
+}
+
+func (c *Linker) getEnv(name string) string {
+	return c.env[name]
 }

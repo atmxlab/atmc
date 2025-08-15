@@ -10,6 +10,10 @@ type Env struct {
 	name Ident
 }
 
+func (e Env) Name() Ident {
+	return e.name
+}
+
 func NewEnv(name Ident, loc types.Location) Env {
 	e := Env{name: name}
 	e.loc = loc // TODO:  можно вычислять!
