@@ -1,16 +1,16 @@
 package processor
 
 import (
+	"github.com/atmxlab/atmcfg/internal/linker"
 	"github.com/atmxlab/atmcfg/internal/parser/ast"
 	"github.com/atmxlab/atmcfg/pkg/errors"
 )
 
 type Processor struct {
-	lexer  Lexer
-	parser Parser
-	linker Linker
-	os     OS
-	// Необходим, чтобы обрабатывать повторные импорты.
+	lexer     Lexer
+	parser    Parser
+	linker    Linker
+	os        OS
 	astByPath map[string]ast.WithPath
 }
 
@@ -24,7 +24,11 @@ func (p *Processor) Process(path string) error {
 		return errors.Wrap(err, "process")
 	}
 
-	_, err = p.linker.Link(p.astByPath[absPath], p.astByPath)
+	_, err = p.linker.Link(linker.LinkParam{
+		MainAst:   p.astByPath[absPath],
+		ASTByPath: p.astByPath,
+		Env:       nil,
+	})
 	if err != nil {
 		return errors.Wrap(err, "linker.Link")
 	}

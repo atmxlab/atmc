@@ -7,16 +7,6 @@ import (
 	"github.com/samber/lo"
 )
 
-// TODO: это чисто линкер, а не компилятор
-//  нужно переименовать.
-//  А компилятор будет из уже полностью готового AST компилировать
-//  либо в структуру, либо в map либо в json либо в yml
-
-// TODO: нужно разделить создание AST и линкер
-//  тут не должно быть всяких чтений с диска, лексеров, парсеров - это не ответственность линкера
-
-type Object = ast.Object
-
 // Path to config.
 type Path string
 
@@ -32,15 +22,19 @@ type OS interface {
 }
 
 type Linker struct {
+	// Необходим, чтобы линковать импортированные ast.
+	astByPath map[string]ast.WithPath
 	// Необходим, чтобы обрабатывать повторные импорты.
-	astByPath    map[string]ast.WithPath
 	linkedByPath map[string]linkedast.Ast
+	// Необходим, чтобы резолвить переменные среды.
+	env map[string]string
 }
 
 func New() *Linker {
 	return &Linker{
 		astByPath:    make(map[string]ast.WithPath),
 		linkedByPath: make(map[string]linkedast.Ast),
+		env:          make(map[string]string),
 	}
 }
 
@@ -57,9 +51,20 @@ func newScope(a ast.WithPath) scope {
 	}
 }
 
-func (c *Linker) Link(mainAst ast.WithPath, astByPath map[string]ast.WithPath) (linkedast.Ast, error) {
-	c.astByPath = astByPath
-	return c.link(newScope(mainAst))
+type LinkParam struct {
+	// AST основного конфигурационного файла.
+	MainAst ast.WithPath
+	// AST по пути нахождения файла.
+	ASTByPath map[string]ast.WithPath
+	// Переменные среды.
+	Env map[string]string
+}
+
+func (c *Linker) Link(param LinkParam) (linkedast.Ast, error) {
+	c.astByPath = param.ASTByPath
+	c.env = param.Env
+
+	return c.link(newScope(param.MainAst))
 }
 
 func (c *Linker) link(scp scope) (linkedast.Ast, error) {

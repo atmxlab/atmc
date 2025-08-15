@@ -555,11 +555,9 @@ func TestParser_Parse(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			mover := tokenmover.New(tc.tokens)
+			p := parser.New()
 
-			p := parser.New(mover)
-
-			a, err := p.Parse()
+			a, err := p.Parse(tokenmover.New(tc.tokens))
 			require.NoError(t, err)
 
 			require.Equal(t, tc.expected, a)

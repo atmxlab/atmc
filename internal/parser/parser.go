@@ -21,11 +21,13 @@ type Parser struct {
 	mover TokenMover
 }
 
-func New(mover TokenMover) *Parser {
-	return &Parser{mover: mover}
+func New() *Parser {
+	return &Parser{}
 }
 
-func (p *Parser) Parse() (ast.Ast, error) {
+func (p *Parser) Parse(mover TokenMover) (ast.Ast, error) {
+	p.mover = mover
+
 	file, err := p.parseFile()
 	if err != nil {
 		// Тут сразу отдаем ошибку, потому что без файла ast быть не может!

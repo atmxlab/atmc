@@ -423,11 +423,9 @@ func TestAstGenerate(t *testing.T) {
 	tokens, err := lex.Tokenize()
 	require.NoError(t, err)
 
-	mover := tokenmover.New(tokens)
+	p := parser.New()
 
-	p := parser.New(mover)
-
-	gotAst, err := p.Parse()
+	gotAst, err := p.Parse(tokenmover.New(tokens))
 	require.NoError(t, err)
 
 	require.Equal(t, expectedAst, gotAst)
