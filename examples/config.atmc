@@ -1,7 +1,0 @@
-common ./common.atmc
-production ./production.atmc
-
-{
-    common...
-    production...
-}

@@ -1,0 +1,10 @@
+{
+  outbox: {
+    enabled: true
+    worker_count: 10
+  }
+  logging: {
+    enabled: true
+    level: ["error"]
+  }
+}

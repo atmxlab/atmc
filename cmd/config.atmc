@@ -1,0 +1,9 @@
+common ./common.atmc
+
+{
+  common... // встраиваем общий конфиг
+  logging: {
+    level: ["warn", "error"]
+    enabled_tracing: true
+  }
+}
