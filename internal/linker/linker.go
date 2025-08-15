@@ -60,40 +60,40 @@ type LinkParam struct {
 	Env map[string]string
 }
 
-func (c *Linker) Link(param LinkParam) (linkedast.Ast, error) {
-	c.astByPath = param.ASTByPath
-	c.env = param.Env
+func (l *Linker) Link(param LinkParam) (linkedast.Ast, error) {
+	l.astByPath = param.ASTByPath
+	l.env = param.Env
 
-	return c.link(newScope(param.MainAst))
+	return l.link(newScope(param.MainAst))
 }
 
-func (c *Linker) link(scp scope) (linkedast.Ast, error) {
+func (l *Linker) link(scp scope) (linkedast.Ast, error) {
 	for _, imp := range scp.ast.Imports() {
 		absPath, ok := scp.ast.ImportPath(imp.Path().String())
 		if !ok {
 			return linkedast.Ast{}, errors.New("get import absolute path by relative path")
 		}
 
-		if alreadyLinked, ok := c.linkedByPath[absPath]; ok {
+		if alreadyLinked, ok := l.linkedByPath[absPath]; ok {
 			scp.linkedByName[imp.Name().String()] = alreadyLinked
 			return alreadyLinked, nil
 		}
 
-		astForLink, ok := c.astByPath[absPath]
+		astForLink, ok := l.astByPath[absPath]
 		if !ok {
 			return linkedast.Ast{}, errors.New("ast for link not found")
 		}
 
-		linked, err := c.link(newScope(astForLink))
+		linked, err := l.link(newScope(astForLink))
 		if err != nil {
 			return linkedast.Ast{}, errors.Wrapf(err, "link ast, path: [%s]", imp.Path().String())
 		}
 
-		c.linkedByPath[absPath] = linked
+		l.linkedByPath[absPath] = linked
 		scp.linkedByName[imp.Name().String()] = linked
 	}
 
-	obj, err := c.linkObject(scp, scp.ast.Root().Object())
+	obj, err := l.linkObject(scp, scp.ast.Root().Object())
 	if err != nil {
 		return linkedast.Ast{}, errors.Wrap(err, "link object")
 	}
@@ -101,8 +101,8 @@ func (c *Linker) link(scp scope) (linkedast.Ast, error) {
 	return linkedast.NewAst(obj), nil
 }
 
-func (c *Linker) linkObject(scp scope, obj ast.Object) (linkedast.Object, error) {
-	entries, err := c.linkEntries(scp, obj.Entries())
+func (l *Linker) linkObject(scp scope, obj ast.Object) (linkedast.Object, error) {
+	entries, err := l.linkEntries(scp, obj.Entries())
 	if err != nil {
 		return linkedast.Object{}, errors.Wrap(err, "link entries")
 	}
@@ -110,19 +110,19 @@ func (c *Linker) linkObject(scp scope, obj ast.Object) (linkedast.Object, error)
 	return linkedast.NewObject(entries), nil
 }
 
-func (c *Linker) linkEntries(scp scope, entries []ast.Entry) ([]linkedast.KV, error) {
+func (l *Linker) linkEntries(scp scope, entries []ast.Entry) ([]linkedast.KV, error) {
 	kv := make([]linkedast.KV, 0, len(entries))
 
 	for _, entry := range entries {
 		switch e := entry.(type) {
 		case ast.KV:
-			ent, err := c.linkKV(scp, e)
+			ent, err := l.linkKV(scp, e)
 			if err != nil {
 				return nil, errors.Wrap(err, "link kv")
 			}
 			kv = append(kv, ent)
 		case ast.Spread:
-			spreadEntries, err := c.linkObjectSpread(scp, e)
+			spreadEntries, err := l.linkObjectSpread(scp, e)
 			if err != nil {
 				return nil, errors.Wrap(err, "link spread")
 			}
@@ -136,32 +136,32 @@ func (c *Linker) linkEntries(scp scope, entries []ast.Entry) ([]linkedast.KV, er
 	return kv, nil
 }
 
-func (c *Linker) linkKV(scp scope, kv ast.KV) (linkedast.KV, error) {
+func (l *Linker) linkKV(scp scope, kv ast.KV) (linkedast.KV, error) {
 	var value linkedast.Expression
 	switch v := kv.Value().(type) {
 	case ast.Object:
-		exp, err := c.linkObject(scp, v)
+		exp, err := l.linkObject(scp, v)
 		if err != nil {
 			return linkedast.KV{}, errors.Wrap(err, "link object")
 		}
 
 		value = exp
 	case ast.Array:
-		exp, err := c.linkArray(scp, v)
+		exp, err := l.linkArray(scp, v)
 		if err != nil {
 			return linkedast.KV{}, errors.Wrap(err, "link array")
 		}
 
 		value = exp
 	case ast.Var:
-		node, err := c.findVariableExp(scp, v)
+		node, err := l.findVariableExp(scp, v)
 		if err != nil {
 			return linkedast.KV{}, errors.Wrap(err, "find variable")
 		}
 
 		value = node
 	case ast.Env:
-		value = linkedast.NewString(c.getEnv(v.Name().String()))
+		value = linkedast.NewString(l.getEnv(v.Name().String()))
 	case ast.Bool:
 		value = linkedast.NewBool(v.Value())
 	case ast.String:
@@ -177,8 +177,8 @@ func (c *Linker) linkKV(scp scope, kv ast.KV) (linkedast.KV, error) {
 	return linkedast.NewKV(linkedast.NewIdent(kv.Key().String()), value), nil
 }
 
-func (c *Linker) linkObjectSpread(scp scope, spread ast.Spread) ([]linkedast.KV, error) {
-	node, err := c.findVariableExp(scp, spread.Var())
+func (l *Linker) linkObjectSpread(scp scope, spread ast.Spread) ([]linkedast.KV, error) {
+	node, err := l.findVariableExp(scp, spread.Var())
 	if err != nil {
 		return nil, errors.Wrap(err, "find variable node")
 	}
@@ -191,8 +191,8 @@ func (c *Linker) linkObjectSpread(scp scope, spread ast.Spread) ([]linkedast.KV,
 	return obj.KV(), nil
 }
 
-func (c *Linker) linkArraySpread(scp scope, spread ast.Spread) ([]linkedast.Expression, error) {
-	node, err := c.findVariableExp(scp, spread.Var())
+func (l *Linker) linkArraySpread(scp scope, spread ast.Spread) ([]linkedast.Expression, error) {
+	node, err := l.findVariableExp(scp, spread.Var())
 	if err != nil {
 		return nil, errors.Wrap(err, "find variable node")
 	}
@@ -205,39 +205,39 @@ func (c *Linker) linkArraySpread(scp scope, spread ast.Spread) ([]linkedast.Expr
 	return arr.Elements(), nil
 }
 
-func (c *Linker) linkArray(scp scope, array ast.Array) (linkedast.Array, error) {
+func (l *Linker) linkArray(scp scope, array ast.Array) (linkedast.Array, error) {
 	elems := make([]linkedast.Expression, 0, len(array.Elements()))
 
 	for _, elem := range array.Elements() {
 		switch v := elem.(type) {
 		case ast.Object:
-			exp, err := c.linkObject(scp, v)
+			exp, err := l.linkObject(scp, v)
 			if err != nil {
 				return linkedast.Array{}, errors.Wrap(err, "link object")
 			}
 			elems = append(elems, exp)
 		case ast.Spread:
-			exps, err := c.linkArraySpread(scp, v)
+			exps, err := l.linkArraySpread(scp, v)
 			if err != nil {
 				return linkedast.Array{}, errors.Wrap(err, "link spread")
 			}
 
 			elems = append(elems, exps...)
 		case ast.Array:
-			exp, err := c.linkArray(scp, v)
+			exp, err := l.linkArray(scp, v)
 			if err != nil {
 				return linkedast.Array{}, errors.Wrap(err, "link array")
 			}
 			elems = append(elems, exp)
 		case ast.Var:
-			node, err := c.findVariableExp(scp, v)
+			node, err := l.findVariableExp(scp, v)
 			if err != nil {
 				return linkedast.Array{}, errors.Wrap(err, "find variable")
 			}
 
 			elems = append(elems, node)
 		case ast.Env:
-			elems = append(elems, linkedast.NewString(c.getEnv(v.Name().String())))
+			elems = append(elems, linkedast.NewString(l.getEnv(v.Name().String())))
 		case ast.Bool:
 			elems = append(elems, linkedast.NewBool(v.Value()))
 		case ast.String:
@@ -254,7 +254,7 @@ func (c *Linker) linkArray(scp scope, array ast.Array) (linkedast.Array, error) 
 	return linkedast.NewArray(elems), nil
 }
 
-func (c *Linker) findVariableExp(scp scope, v ast.Var) (linkedast.Expression, error) {
+func (l *Linker) findVariableExp(scp scope, v ast.Var) (linkedast.Expression, error) {
 	linkedAst, ok := scp.linkedByName[v.Path()[0].String()]
 	if !ok {
 		return nil, errors.New("import for variable not found")
@@ -270,6 +270,6 @@ func (c *Linker) findVariableExp(scp scope, v ast.Var) (linkedast.Expression, er
 	return node, nil
 }
 
-func (c *Linker) getEnv(name string) string {
-	return c.env[name]
+func (l *Linker) getEnv(name string) string {
+	return l.env[name]
 }

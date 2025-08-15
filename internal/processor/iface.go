@@ -8,19 +8,23 @@ import (
 	"github.com/atmxlab/atmcfg/internal/parser/ast"
 )
 
+//go:generate mock OS
 type OS interface {
 	ReadFile(string) ([]byte, error)
 	AbsPath(baseDir, relPath string) (string, error)
 }
 
+//go:generate mock Parser
 type Parser interface {
 	Parse(mover parser.TokenMover) (ast.Ast, error)
 }
 
+//go:generate mock Lexer
 type Lexer interface {
 	Tokenize(input string) (*tokenmover.TokenMover, error)
 }
 
+//go:generate mock Linker
 type Linker interface {
 	Link(param linker.LinkParam) (linkedast.Ast, error)
 }

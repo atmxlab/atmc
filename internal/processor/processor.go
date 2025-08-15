@@ -14,6 +14,16 @@ type Processor struct {
 	astByPath map[string]ast.WithPath
 }
 
+func NewProcessor(lexer Lexer, parser Parser, linker Linker, os OS) *Processor {
+	return &Processor{
+		lexer:     lexer,
+		parser:    parser,
+		linker:    linker,
+		os:        os,
+		astByPath: make(map[string]ast.WithPath),
+	}
+}
+
 func (p *Processor) Process(path string) error {
 	absPath, err := p.os.AbsPath(path, ".")
 	if err != nil {
