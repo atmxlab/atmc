@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+    <dict>
+        <key>name</key>
+        <string>atmc</string>
+        <key>scopeName</key>
+        <string>source.json.custom</string>
+        <key>fileTypes</key>
+        <array>
+            <string>atmc</string>
+        </array>
+        <key>patterns</key>
+        <array>
+            <!--OR-->
+            <dict>
+                <key>name</key>
+                <string>operator.arithmetic</string>
+                <key>match</key>
+                <string>||</string>
+            </dict>
+
+            <!-- Пути к файлам (/path или ./path) -->
+            <dict>
+                <key>name</key>
+                <string>string.unquoted.path.atmc</string>
+                <key>match</key>
+                <string>(?:\./|/)[\w./-]+\.atmc\b</string>
+            </dict>
+
+            <!-- Spread -->
+            <dict>
+                <key>name</key>
+                <string>keyword.operator.spread</string>
+                <key>match</key>
+                <string>\.\.\.</string>
+            </dict>
+
+            <!-- Env -->
+            <dict>
+                <key>name</key>
+                <string>variable.language.environment</string>
+                <key>match</key>
+                <string>\$[A-Z_][A-Z0-9_]*</string>
+            </dict>
+
+            <!-- Bool -->
+            <dict>
+                <key>name</key>
+                <string>constant.language.boolean</string>
+                <key>match</key>
+                <string>\b(true|false)\b</string>
+            </dict>
+
+            <!-- Float -->
+            <dict>
+                <key>name</key>
+                <string>constant.numeric.float</string>
+                <key>match</key>
+                <string>[-+]?[0-9]+(\.[0-9]+)</string>
+            </dict>
+
+            <!-- Integer -->
+            <dict>
+                <key>name</key>
+                <string>constant.numeric.integer</string>
+                <key>match</key>
+                <string>[-+]?[0-9]+</string>
+            </dict>
+
+            <!-- String -->
+            <dict>
+                <key>name</key>
+                <string>string.quoted.double</string>
+                <key>match</key>
+                <string>"(\\.|[^"\\])*?"</string>
+            </dict>
+
+
+            <!-- Variables -->
+            <dict>
+                <key>name</key>
+                <string>variable.other.constant</string>
+                <key>match</key>
+                <string>\b||\b</string>
+            </dict>
+
+            <!-- Array -->
+            <dict>
+                <key>name</key>
+                <string>meta.array.atmc</string>
+                <key>begin</key>
+                <string>\[</string>
+                <key>end</key>
+                <string>\]</string>
+                <key>patterns</key>
+                <array>
+                    <dict>
+                        <key>include</key>
+                        <string>$self</string>
+                    </dict>
+                </array>
+            </dict>
+
+            <!-- Object -->
+            <dict>
+                <key>name</key>
+                <string>meta.object.atmc</string>
+                <key>begin</key>
+                <string>\{</string>
+                <key>end</key>
+                <string>\}</string>
+                <key>patterns</key>
+                <array>
+                    <dict>
+                        <key>include</key>
+                        <string>$self</string>
+                    </dict>
+                </array>
+            </dict>
+
+            <!-- Operators -->
+            <dict>
+                <key>name</key>
+                <string>keyword.operator.atmc</string>
+                <key>match</key>
+                <string>[:,\[\]]</string>
+            </dict>
+
+            <!-- Comments -->
+            <dict>
+                <key>name</key>
+                <string>comment.line.double-slash</string>
+                <key>match</key>
+                <string>//.*$</string>
+            </dict>
+
+            <!-- Idents -->
+            <dict>
+                <key>name</key>
+                <string>variable.other.atmc</string>
+                <key>match</key>
+                <string>\b[a-zA-Z_][a-zA-Z0-9_]*\b</string>
+            </dict>
+        </array>
+        <key>uuid</key>
+        <string>a7c3e8b9-12d4-4f5d-87e2-1c9f3a8b5d6e</string>
+    </dict>
+</plist>
