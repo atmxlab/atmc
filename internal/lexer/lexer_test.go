@@ -47,9 +47,9 @@ func TestLexer_Tokenize_Tokens(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			l := lexer.New(tc.input)
+			l := lexer.New()
 
-			tokens, err := l.Tokenize()
+			tokens, err := l.Tokenize(tc.input)
 			require.NoError(t, err)
 			require.Equal(t, tc.expectedTokens, tokens)
 		})
@@ -119,9 +119,9 @@ func TestLexer_Tokenize_LexerLocation(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			l := lexer.New(tc.input)
+			l := lexer.New()
 
-			_, err := l.Tokenize()
+			_, err := l.Tokenize(tc.input)
 			require.NoError(t, err)
 			require.Equal(t, tc.expectedPos, l.Location())
 		})
@@ -357,9 +357,9 @@ common ./common.atmc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			l := lexer.New(tc.input)
+			l := lexer.New()
 
-			tokens, err := l.Tokenize()
+			tokens, err := l.Tokenize(tc.input)
 			if tc.hasError {
 				require.Error(t, err)
 			} else {

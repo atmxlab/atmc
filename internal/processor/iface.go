@@ -1,11 +1,11 @@
 package processor
 
 import (
-	"github.com/atmxlab/atmcfg/internal/lexer/tokenmover"
 	"github.com/atmxlab/atmcfg/internal/linker"
 	linkedast "github.com/atmxlab/atmcfg/internal/linker/ast"
 	"github.com/atmxlab/atmcfg/internal/parser"
 	"github.com/atmxlab/atmcfg/internal/parser/ast"
+	"github.com/atmxlab/atmcfg/internal/types/token"
 )
 
 //go:generate mock OS
@@ -21,7 +21,7 @@ type Parser interface {
 
 //go:generate mock Lexer
 type Lexer interface {
-	Tokenize(input string) (*tokenmover.TokenMover, error)
+	Tokenize(input string) ([]token.Token, error)
 }
 
 //go:generate mock Linker

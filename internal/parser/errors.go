@@ -10,6 +10,7 @@ var (
 	ErrTokenMismatch   = errors.New("token mismatch")
 	ErrUnexpectedToken = errors.New("unexpected token")
 	ErrExpectedNode    = errors.New("expected node")
+	ErrTokenNotExist   = errors.New("token not exist")
 )
 
 func NewErrTokenMismatch(expectedTokens ...token.Type) error {
@@ -41,5 +42,16 @@ func NewErrExpectedNode(expectedNodes ...string) error {
 		ErrExpectedNode,
 		"expected nodes: %v",
 		expectedNodes,
+	)
+}
+
+func NewErrTokenNotExist(expectedTokens ...token.Type) error {
+	expectedTokensStr := lo.Map(expectedTokens, func(tokType token.Type, _ int) string {
+		return tokType.String()
+	})
+	return errors.Wrapf(
+		ErrTokenNotExist,
+		"expected tokens: %v",
+		expectedTokensStr,
 	)
 }

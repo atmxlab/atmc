@@ -15,15 +15,16 @@ func (l *Lexer) Location() types.Location {
 	return l.location
 }
 
-func New(input string) *Lexer {
+func New() *Lexer {
 	return &Lexer{
-		input:    input,
 		tokens:   make([]token.Token, 0),
 		location: types.NewInitialLocation(),
 	}
 }
 
-func (l *Lexer) Tokenize() ([]token.Token, error) {
+func (l *Lexer) Tokenize(input string) ([]token.Token, error) {
+	l.input = input
+
 	orderedTokenTypes := token.OrderedTokenTypes()
 
 	for len(l.input) > 0 {
@@ -61,7 +62,12 @@ func (l *Lexer) Tokenize() ([]token.Token, error) {
 		}
 	}
 
-	return l.tokens, nil
+	result := l.tokens
+
+	// TODO: fixme
+	l.tokens = make([]token.Token, 0)
+
+	return result, nil
 }
 
 func (l *Lexer) addToken(t token.Type, value string) {

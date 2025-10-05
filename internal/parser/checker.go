@@ -6,6 +6,10 @@ import (
 )
 
 func (p *Parser) match(tps ...token.Type) bool {
+	if p.mover.IsEmpty() {
+		return false
+	}
+
 	for _, t := range tps {
 		if t == p.mover.Token().Type() {
 			return true
@@ -16,6 +20,10 @@ func (p *Parser) match(tps ...token.Type) bool {
 }
 
 func (p *Parser) require(tps ...token.Type) error {
+	if p.mover.IsEmpty() {
+		return NewErrTokenNotExist(tps...)
+	}
+
 	if p.match(tps...) {
 		return nil
 	}
@@ -24,6 +32,10 @@ func (p *Parser) require(tps ...token.Type) error {
 }
 
 func (p *Parser) check(tps ...token.Type) error {
+	if p.mover.IsEmpty() {
+		return NewErrTokenNotExist(tps...)
+	}
+
 	if p.match(tps...) {
 		return nil
 	}

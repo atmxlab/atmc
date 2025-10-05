@@ -3,7 +3,6 @@ package processor_test
 import (
 	"testing"
 
-	"github.com/atmxlab/atmcfg/internal/lexer/tokenmover"
 	"github.com/atmxlab/atmcfg/internal/linker"
 	linkedast "github.com/atmxlab/atmcfg/internal/linker/ast"
 	"github.com/atmxlab/atmcfg/internal/parser/ast"
@@ -11,6 +10,7 @@ import (
 	"github.com/atmxlab/atmcfg/internal/processor/mocks"
 	"github.com/atmxlab/atmcfg/internal/test/testast"
 	"github.com/atmxlab/atmcfg/internal/test/testlinkedast"
+	"github.com/atmxlab/atmcfg/internal/types/token"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/mock/gomock"
@@ -35,7 +35,7 @@ func (s *TestProcessSuite) SetupTest() {
 	s.parserMock = mocks.NewMockParser(ctrl)
 	s.linkerMock = mocks.NewMockLinker(ctrl)
 
-	s.processer = processor.NewProcessor(
+	s.processer = processor.New(
 		s.lexerMock,
 		s.parserMock,
 		s.linkerMock,
@@ -61,7 +61,7 @@ func (s *TestProcessSuite) TestHappyPath() {
 	s.osMock.EXPECT().AbsPath(configPath, ".").Return(absConfigPath, nil)
 	s.osMock.EXPECT().ReadFile(absConfigPath).Return([]byte(fileContent), nil)
 
-	s.lexerMock.EXPECT().Tokenize(gomock.Any()).Return(&tokenmover.TokenMover{}, nil)
+	s.lexerMock.EXPECT().Tokenize(gomock.Any()).Return(make([]token.Token, 0), nil)
 
 	s.parserMock.EXPECT().Parse(gomock.Any()).Return(testast.NewAstBuilder().Build(), nil)
 

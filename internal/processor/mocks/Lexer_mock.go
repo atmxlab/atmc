@@ -12,7 +12,7 @@ package mocks
 import (
 	reflect "reflect"
 
-	tokenmover "github.com/atmxlab/atmcfg/internal/lexer/tokenmover"
+	token "github.com/atmxlab/atmcfg/internal/types/token"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -40,10 +40,10 @@ func (m *MockLexer) EXPECT() *MockLexerMockRecorder {
 }
 
 // Tokenize mocks base method.
-func (m *MockLexer) Tokenize(arg0 string) (*tokenmover.TokenMover, error) {
+func (m *MockLexer) Tokenize(arg0 string) ([]token.Token, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Tokenize", arg0)
-	ret0, _ := ret[0].(*tokenmover.TokenMover)
+	ret0, _ := ret[0].([]token.Token)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

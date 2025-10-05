@@ -419,8 +419,8 @@ func TestAstGenerate(t *testing.T) {
 		),
 	)
 
-	lex := lexer.New(input)
-	tokens, err := lex.Tokenize()
+	lex := lexer.New()
+	tokens, err := lex.Tokenize(input)
 	require.NoError(t, err)
 
 	p := parser.New()

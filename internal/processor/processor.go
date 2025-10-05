@@ -1,6 +1,9 @@
 package processor
 
 import (
+	"path/filepath"
+
+	"github.com/atmxlab/atmcfg/internal/lexer/tokenmover"
 	"github.com/atmxlab/atmcfg/internal/linker"
 	"github.com/atmxlab/atmcfg/internal/parser/ast"
 	"github.com/atmxlab/atmcfg/pkg/errors"
@@ -14,7 +17,7 @@ type Processor struct {
 	astByPath map[string]ast.WithPath
 }
 
-func NewProcessor(lexer Lexer, parser Parser, linker Linker, os OS) *Processor {
+func New(lexer Lexer, parser Parser, linker Linker, os OS) *Processor {
 	return &Processor{
 		lexer:     lexer,
 		parser:    parser,
@@ -30,7 +33,7 @@ func (p *Processor) Process(path string) error {
 		return errors.Wrap(err, "get abs path")
 	}
 
-	if err = p.process(absPath, make(map[string]struct{})); err != nil {
+	if err = p.process(absPath, newEmptyImportStack()); err != nil {
 		return errors.Wrap(err, "process")
 	}
 
@@ -46,16 +49,16 @@ func (p *Processor) Process(path string) error {
 	return nil
 }
 
-func (p *Processor) process(path string, importStack map[string]struct{}) error {
+func (p *Processor) process(path string, iStack importStack) error {
 	if _, ok := p.astByPath[path]; ok {
 		return nil
 	}
 
-	if _, ok := importStack[path]; ok {
+	if _, ok := iStack[path]; ok {
 		return errors.New("import cycle detected")
 	}
 
-	importStack[path] = struct{}{}
+	iStack[path] = struct{}{}
 
 	madeAST, err := p.makeAst(path)
 	if err != nil {
@@ -65,14 +68,14 @@ func (p *Processor) process(path string, importStack map[string]struct{}) error 
 	importPathByRelPath := make(map[string]string, len(madeAST.Imports()))
 
 	for _, imp := range madeAST.Imports() {
-		importPath, err := p.os.AbsPath(path, imp.Path().String())
+		importPath, err := p.os.AbsPath(filepath.Dir(path), imp.Path().String())
 		if err != nil {
 			return errors.Wrap(err, "get abs path")
 		}
 
 		importPathByRelPath[imp.Path().String()] = importPath
 
-		if err := p.process(importPath, p.copyMap(importStack)); err != nil {
+		if err := p.process(importPath, iStack.Clone()); err != nil {
 			return errors.Wrap(err, "process import")
 		}
 	}
@@ -88,12 +91,12 @@ func (p *Processor) makeAst(path string) (ast.Ast, error) {
 		return ast.Ast{}, errors.Wrap(err, "read file content")
 	}
 
-	tokenMover, err := p.lexer.Tokenize(code)
+	tokens, err := p.lexer.Tokenize(code)
 	if err != nil {
 		return ast.Ast{}, errors.Wrap(err, "tokenize")
 	}
 
-	a, err := p.parser.Parse(tokenMover)
+	a, err := p.parser.Parse(tokenmover.New(tokens))
 	if err != nil {
 		return ast.Ast{}, errors.Wrap(err, "parse")
 	}
@@ -108,13 +111,4 @@ func (p *Processor) readFileContent(filePath string) (string, error) {
 	}
 
 	return string(content), nil
-}
-
-func (p *Processor) copyMap(importStack map[string]struct{}) map[string]struct{} {
-	copied := make(map[string]struct{}, len(importStack))
-	for path := range importStack {
-		copied[path] = struct{}{}
-	}
-
-	return copied
 }

@@ -44,7 +44,7 @@ func (p *Parser) parseFile() (ast.File, error) {
 
 	object, err := p.parseObject()
 	if err != nil {
-		return ast.File{}, errors.Wrap(err, "file expected object node")
+		return ast.File{}, errors.Wrap(err, "parse object")
 	}
 
 	return ast.NewFile(imports, object), nil
@@ -52,6 +52,9 @@ func (p *Parser) parseFile() (ast.File, error) {
 
 func (p *Parser) parseImports() ([]ast.Import, error) {
 	imports := make([]ast.Import, 0)
+	if p.mover.IsEmpty() {
+		return imports, nil
+	}
 
 	for {
 		imp, err := p.parseImport()
