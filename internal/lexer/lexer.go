@@ -1,6 +1,8 @@
 package lexer
 
 import (
+	"strings"
+
 	"github.com/atmxlab/atmcfg/internal/types"
 	"github.com/atmxlab/atmcfg/internal/types/token"
 )
@@ -40,7 +42,7 @@ func (l *Lexer) Tokenize(input string) ([]token.Token, error) {
 
 			switch t {
 			case token.WS, token.Comma:
-				// Ничего не делаем. Просто игнорируем пробелы.
+				// Ничего не делаем. Просто игнорируем пробелы и запятые.
 			case token.EOL:
 				l.location = l.location.SetEnd(
 					l.location.End().
@@ -71,6 +73,9 @@ func (l *Lexer) Tokenize(input string) ([]token.Token, error) {
 }
 
 func (l *Lexer) addToken(t token.Type, value string) {
+	if t == token.String {
+		value = strings.Trim(value, "\"")
+	}
 	tok := token.New(
 		t,
 		token.Value(value),

@@ -743,4 +743,155 @@ var1 ./import1.atmc
 
 		require.Equal(t, expectedAst, a)
 	})
+
+	t.Run("override_nested_entry_only", func(t *testing.T) {
+		t.Parallel()
+
+		mainFilePath := "/home/user/config.atmc"
+
+		os := testos.NewOSBuilder().
+			File(func(fb *testos.FileBuilder) {
+				fb.
+					Path(mainFilePath).
+					Content(`
+common ./common.atmc
+
+{
+	common...,
+	logging: {
+		enabled: false
+	}
+}
+`)
+			}).
+			File(func(fb *testos.FileBuilder) {
+				fb.
+					Path("/home/user/common.atmc").
+					Content(`{
+logging: {
+	enabled: true
+	level: ["warn", "error"]
+}
+}`)
+			}).
+			Build()
+
+		app := test.NewApp(t, test.WithOS(os))
+
+		a, err := app.Processor().Process(mainFilePath)
+		require.NoError(t, err)
+
+		expectedAst := testlinkedast.
+			NewBuilder().
+			Object(func(ob *testlinkedast.ObjectBuilder) {
+				ob.
+					KV(func(kvb *testlinkedast.KVBuilder) {
+						kvb.
+							Key("logging").
+							Value(
+								testlinkedast.
+									NewObjectBuilder().
+									KV(func(kvb *testlinkedast.KVBuilder) {
+										kvb.Key("enabled").Value(linkedast.NewBool(false))
+									}).
+									KV(func(kvb *testlinkedast.KVBuilder) {
+										kvb.Key("level").Value(
+											testlinkedast.
+												NewArrayBuilder().
+												Element(linkedast.NewString("warn")).
+												Element(linkedast.NewString("error")).
+												Build(),
+										)
+									}).
+									Build(),
+							)
+					})
+			}).
+			Build()
+
+		require.Equal(t, expectedAst, a)
+	})
+
+	t.Run("override_deep_nested_entry_only", func(t *testing.T) {
+		t.Parallel()
+
+		mainFilePath := "/home/user/config.atmc"
+
+		os := testos.NewOSBuilder().
+			File(func(fb *testos.FileBuilder) {
+				fb.
+					Path(mainFilePath).
+					Content(`
+common ./common.atmc
+
+{
+	common...,
+	logging: {
+		settings: {
+			enabled: false
+		}
+	}
+}
+`)
+			}).
+			File(func(fb *testos.FileBuilder) {
+				fb.
+					Path("/home/user/common.atmc").
+					Content(`{
+logging: {
+	settings: {
+		enabled: true
+		enableTracing: true
+	}
+	level: ["warn", "error"]
+}
+}`)
+			}).
+			Build()
+
+		app := test.NewApp(t, test.WithOS(os))
+
+		a, err := app.Processor().Process(mainFilePath)
+		require.NoError(t, err)
+
+		expectedAst := testlinkedast.
+			NewBuilder().
+			Object(func(ob *testlinkedast.ObjectBuilder) {
+				ob.
+					KV(func(kvb *testlinkedast.KVBuilder) {
+						kvb.
+							Key("logging").
+							Value(
+								testlinkedast.
+									NewObjectBuilder().
+									KV(func(kvb *testlinkedast.KVBuilder) {
+										kvb.Key("settings").Value(
+											testlinkedast.
+												NewObjectBuilder().
+												KV(func(kvb *testlinkedast.KVBuilder) {
+													kvb.Key("enabled").Value(linkedast.NewBool(false))
+												}).
+												KV(func(kvb *testlinkedast.KVBuilder) {
+													kvb.Key("enableTracing").Value(linkedast.NewBool(true))
+												}).
+												Build(),
+										)
+									}).
+									KV(func(kvb *testlinkedast.KVBuilder) {
+										kvb.Key("level").Value(
+											testlinkedast.
+												NewArrayBuilder().
+												Element(linkedast.NewString("warn")).
+												Element(linkedast.NewString("error")).
+												Build(),
+										)
+									}).
+									Build(),
+							)
+					})
+			}).
+			Build()
+
+		require.Equal(t, expectedAst, a)
+	})
 }

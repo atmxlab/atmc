@@ -107,7 +107,11 @@ func (l *Linker) linkEntries(scp scope, entries []ast.Entry) ([]linkedast.KV, er
 			if err != nil {
 				return nil, errors.Wrap(err, "link kv")
 			}
-			kvMap.Set(ent.Key(), ent)
+			if existingEntry, exist := kvMap.Get(ent.Key()); exist {
+				kvMap.Set(ent.Key(), l.mergeEntries(existingEntry, ent))
+			} else {
+				kvMap.Set(ent.Key(), ent)
+			}
 		case ast.Spread:
 			spreadEntries, err := l.linkObjectSpread(scp, e)
 			if err != nil {
@@ -264,4 +268,30 @@ func (l *Linker) findVariableExp(scp scope, v ast.Var) (linkedast.Expression, er
 
 func (l *Linker) getEnv(name string) string {
 	return l.env[name]
+}
+
+func (l *Linker) mergeEntries(entry1, entry2 linkedast.KV) linkedast.KV {
+	v1, ok1 := entry1.Value().(linkedast.Object)
+	v2, ok2 := entry2.Value().(linkedast.Object)
+	if !ok1 || !ok2 {
+		return entry2
+	}
+
+	kvMap := orderedmap.NewOrderedMap[linkedast.Ident, linkedast.KV]()
+	for _, v := range v1.KV() {
+		if existingEntry, exist := kvMap.Get(v.Key()); exist {
+			kvMap.Set(v.Key(), l.mergeEntries(existingEntry, v))
+		} else {
+			kvMap.Set(v.Key(), v)
+		}
+	}
+	for _, v := range v2.KV() {
+		if existingEntry, exist := kvMap.Get(v.Key()); exist {
+			kvMap.Set(v.Key(), l.mergeEntries(existingEntry, v))
+		} else {
+			kvMap.Set(v.Key(), v)
+		}
+	}
+
+	return linkedast.NewKV(entry1.Key(), linkedast.NewObject(kvMap.Values()))
 }
