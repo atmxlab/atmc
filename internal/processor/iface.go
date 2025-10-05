@@ -29,3 +29,8 @@ type Lexer interface {
 type Linker interface {
 	Link(param linker.LinkParam) (linkedast.Ast, error)
 }
+
+//go:generate mock Analyzer
+type Analyzer interface {
+	Analyze(a ast.Ast) error
+}

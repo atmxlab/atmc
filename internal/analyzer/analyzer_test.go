@@ -1,9 +1,9 @@
-package semantic_test
+package analyzer_test
 
 import (
 	"testing"
 
-	"github.com/atmxlab/atmcfg/internal/compiler/semantic"
+	semantic2 "github.com/atmxlab/atmcfg/internal/analyzer"
 	"github.com/atmxlab/atmcfg/internal/test/testast"
 	"github.com/stretchr/testify/require"
 )
@@ -21,10 +21,10 @@ func TestAnalyzer_Analyze(t *testing.T) {
 			ib.Path(testast.NewPath("/path1/import1.atmc"))
 		})
 
-		a := semantic.NewAnalyzer()
+		a := semantic2.New()
 
 		err := a.Analyze(b.Build())
-		require.ErrorIs(t, err, semantic.ErrUnusedVariable)
+		require.ErrorIs(t, err, semantic2.ErrUnusedVariable)
 	})
 
 	t.Run("undefined_spread_variable", func(t *testing.T) {
@@ -41,10 +41,10 @@ func TestAnalyzer_Analyze(t *testing.T) {
 			})
 		})
 
-		a := semantic.NewAnalyzer()
+		a := semantic2.New()
 
 		err := a.Analyze(b.Build())
-		require.ErrorIs(t, err, semantic.ErrUndefinedVariable)
+		require.ErrorIs(t, err, semantic2.ErrUndefinedVariable)
 	})
 
 	t.Run("undefined_variable", func(t *testing.T) {
@@ -62,9 +62,9 @@ func TestAnalyzer_Analyze(t *testing.T) {
 			})
 		})
 
-		a := semantic.NewAnalyzer()
+		a := semantic2.New()
 
 		err := a.Analyze(b.Build())
-		require.ErrorIs(t, err, semantic.ErrUndefinedVariable)
+		require.ErrorIs(t, err, semantic2.ErrUndefinedVariable)
 	})
 }

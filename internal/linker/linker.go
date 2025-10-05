@@ -260,13 +260,16 @@ func (l *Linker) linkArray(scp scope, array ast.Array) (linkedast.Array, error) 
 func (l *Linker) findVariableExp(scp scope, v ast.Var) (linkedast.Expression, error) {
 	linkedAst, ok := scp.linkedByName[v.Path()[0].String()]
 	if !ok {
-		return nil, errors.New("import for variable not found")
+		return nil, newErrNotFoundVariable(v.Path()[0].String())
 	}
 
 	node, err := linkedAst.FindExpByPath(lo.Map(v.Path()[1:], func(item ast.Ident, _ int) linkedast.Ident {
 		return linkedast.NewIdent(item.String())
 	}))
-	if err != nil {
+	switch {
+	case errors.Is(err, errors.ErrNotFound):
+		return nil, newErrNotFoundVariable(v.StringPath()...)
+	case err != nil:
 		return nil, errors.Wrap(err, "find node by path")
 	}
 

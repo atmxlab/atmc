@@ -1,7 +1,10 @@
 package ast
 
 import (
+	"strings"
+
 	"github.com/atmxlab/atmcfg/pkg/errors"
+	"github.com/samber/lo"
 )
 
 type Object struct {
@@ -25,7 +28,7 @@ func (o Object) FindExpByPath(path []Ident) (Expression, error) {
 
 	foundNode, err := o.findExpByPath(path)
 	if err != nil {
-		return nil, errors.Wrapf(err, "error finding node by path")
+		return nil, errors.Wrapf(err, "error finding expression by path")
 	}
 
 	return foundNode, nil
@@ -49,5 +52,10 @@ func (o Object) findExpByPath(path []Ident) (Expression, error) {
 		}
 	}
 
-	return nil, errors.New("node not found")
+	return nil, errors.NotFoundf("expression by path not found: path: %s", strings.Join(lo.Map(path, func(
+		item Ident,
+		index int,
+	) string {
+		return item.String()
+	}), "."))
 }

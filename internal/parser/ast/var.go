@@ -3,6 +3,7 @@ package ast
 import (
 	"github.com/atmxlab/atmcfg/internal/types"
 	"github.com/atmxlab/atmcfg/pkg/errors"
+	"github.com/samber/lo"
 )
 
 type Var struct {
@@ -12,6 +13,12 @@ type Var struct {
 
 func (v Var) Path() []Ident {
 	return v.path
+}
+
+func (v Var) StringPath() []string {
+	return lo.Map(v.path, func(item Ident, _ int) string {
+		return item.String()
+	})
 }
 
 func NewVar(path []Ident) Var {

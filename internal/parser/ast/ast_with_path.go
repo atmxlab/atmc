@@ -10,6 +10,10 @@ func NewWithPath(ast Ast, absPath string, importAbsPathByRelPath map[string]stri
 	return WithPath{ast: ast, absPath: absPath, importAbsPathByRelPath: importAbsPathByRelPath}
 }
 
+func (a WithPath) AST() Ast {
+	return a.ast
+}
+
 func (a WithPath) Path() string {
 	return a.absPath
 }

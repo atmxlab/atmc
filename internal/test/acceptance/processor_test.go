@@ -3,6 +3,7 @@ package acceptance
 import (
 	"testing"
 
+	"github.com/atmxlab/atmcfg/internal/analyzer"
 	"github.com/atmxlab/atmcfg/internal/linker"
 	linkedast "github.com/atmxlab/atmcfg/internal/linker/ast"
 	"github.com/atmxlab/atmcfg/internal/parser"
@@ -16,7 +17,7 @@ import (
 func TestProcessor_WithErrors(t *testing.T) {
 	t.Parallel()
 
-	t.Run("import_not_found", func(t *testing.T) {
+	t.Run("unused_variable", func(t *testing.T) {
 		t.Parallel()
 
 		mainFilePath := "/home/user/config.atmc"
@@ -34,7 +35,29 @@ func TestProcessor_WithErrors(t *testing.T) {
 
 		_, err := app.Processor().Process(mainFilePath)
 
+		require.ErrorIs(t, err, analyzer.ErrUnusedVariable)
+	})
+
+	t.Run("import_not_found", func(t *testing.T) {
+		t.Parallel()
+
+		mainFilePath := "/home/user/config.atmc"
+
+		os := testos.
+			NewOSBuilder().
+			File(func(fb *testos.FileBuilder) {
+				fb.
+					Path(mainFilePath).
+					Content("var1 ./import.atmc {a: 1, b: var1}")
+			}).
+			Build()
+
+		app := test.NewApp(t, test.WithOS(os))
+
+		_, err := app.Processor().Process(mainFilePath)
+
 		require.ErrorIs(t, err, errors.ErrNotFound)
+		require.ErrorContains(t, err, "file not found")
 	})
 
 	t.Run("empty_content_in_import", func(t *testing.T) {
@@ -47,7 +70,7 @@ func TestProcessor_WithErrors(t *testing.T) {
 			File(func(fb *testos.FileBuilder) {
 				fb.
 					Path(mainFilePath).
-					Content("var1 ./import.atmc {a: 1, b: 2}")
+					Content("var1 ./import.atmc {a: 1, b: var1.c}")
 			}).
 			File(func(fb *testos.FileBuilder) {
 				fb.
@@ -99,6 +122,80 @@ var1 ./import1.atmc
 		require.ErrorIs(t, err, linker.ErrUnexpectedNodeType)
 		require.ErrorContains(t, err, "expected: Object")
 	})
+
+	t.Run("with_undefined_variable", func(t *testing.T) {
+		t.Parallel()
+
+		mainFilePath := "/home/user/config.atmc"
+
+		os := testos.NewOSBuilder().
+			File(func(fb *testos.FileBuilder) {
+				fb.
+					Path(mainFilePath).
+					Content(`
+var1 ./import1.atmc
+
+{
+	a: var1.c, 
+	b: var2.b,
+}
+`)
+			}).
+			File(func(fb *testos.FileBuilder) {
+				fb.
+					Path("/home/user/import1.atmc").
+					Content("{c: [3, 4, 5], d: 6}")
+			}).
+			Env(func(eb *testos.EnvBuilder) {
+				eb.
+					Key("password").
+					Value("qwerty")
+			}).
+			Build()
+
+		app := test.NewApp(t, test.WithOS(os))
+
+		_, err := app.Processor().Process(mainFilePath)
+		require.ErrorIs(t, err, analyzer.ErrUndefinedVariable)
+		require.ErrorContains(t, err, "undefined variable: var2")
+	})
+
+	t.Run("with_undefined_nested_variable", func(t *testing.T) {
+		t.Parallel()
+
+		mainFilePath := "/home/user/config.atmc"
+
+		os := testos.NewOSBuilder().
+			File(func(fb *testos.FileBuilder) {
+				fb.
+					Path(mainFilePath).
+					Content(`
+var1 ./import1.atmc
+
+{
+	a: var1.c, 
+	b: var1.j,
+}
+`)
+			}).
+			File(func(fb *testos.FileBuilder) {
+				fb.
+					Path("/home/user/import1.atmc").
+					Content("{c: [3, 4, 5], d: 6}")
+			}).
+			Env(func(eb *testos.EnvBuilder) {
+				eb.
+					Key("password").
+					Value("qwerty")
+			}).
+			Build()
+
+		app := test.NewApp(t, test.WithOS(os))
+
+		_, err := app.Processor().Process(mainFilePath)
+		require.ErrorIs(t, err, linker.ErrNotFoundVariable)
+		require.ErrorContains(t, err, "expected: var1.j")
+	})
 }
 
 func TestProcessor_HappyPath(t *testing.T) {
@@ -115,47 +212,6 @@ func TestProcessor_HappyPath(t *testing.T) {
 				fb.
 					Path(mainFilePath).
 					Content("{a: 1, b: 2}")
-			}).
-			Build()
-
-		app := test.NewApp(t, test.WithOS(os))
-
-		a, err := app.Processor().Process(mainFilePath)
-		require.NoError(t, err)
-
-		expectedAst := testlinkedast.
-			NewBuilder().
-			Object(func(ob *testlinkedast.ObjectBuilder) {
-				ob.
-					KV(func(kvb *testlinkedast.KVBuilder) {
-						kvb.Key(linkedast.NewIdent("a")).
-							Value(linkedast.NewInt(1))
-					}).
-					KV(func(kvb *testlinkedast.KVBuilder) {
-						kvb.Key(linkedast.NewIdent("b")).
-							Value(linkedast.NewInt(2))
-					})
-			}).
-			Build()
-
-		require.Equal(t, expectedAst, a)
-	})
-
-	t.Run("simple_code_with_import_but_not_used_imported_data", func(t *testing.T) {
-		t.Parallel()
-
-		mainFilePath := "/home/user/config.atmc"
-
-		os := testos.NewOSBuilder().
-			File(func(fb *testos.FileBuilder) {
-				fb.
-					Path(mainFilePath).
-					Content("var1 ./import.atmc {a: 1, b: 2}")
-			}).
-			File(func(fb *testos.FileBuilder) {
-				fb.
-					Path("/home/user/import.atmc").
-					Content("{c: 3, d: 4}")
 			}).
 			Build()
 

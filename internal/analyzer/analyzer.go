@@ -1,4 +1,4 @@
-package semantic
+package analyzer
 
 import (
 	"github.com/atmxlab/atmcfg/internal/parser/ast"
@@ -9,7 +9,7 @@ type Analyzer struct {
 	scope *scope
 }
 
-func NewAnalyzer() *Analyzer {
+func New() *Analyzer {
 	return &Analyzer{scope: newScope()}
 }
 
@@ -55,7 +55,7 @@ func (ar *Analyzer) Visit(node ast.Node) error {
 
 func (ar *Analyzer) checkVar(v ast.Var) error {
 	if len(v.Path()) == 0 {
-		return errors.Newf("invalid variable. variable path is empty") // TODO: нормально возвращать ошибку (с доп информацией)
+		return errors.Newf("invalid variable. variable path is empty")
 	}
 	firstPartFromVarPath := v.Path()[0]
 

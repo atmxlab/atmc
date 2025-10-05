@@ -65,7 +65,13 @@ func (b *ObjectBuilder) Location(location types.Location) {
 }
 
 func (b *ObjectBuilder) Spread(hook func(sb *SpreadBuilder)) {
-	sb := newSpreadBuilder()
+	sb := NewSpreadBuilder()
+	hook(sb)
+	b.entries = append(b.entries, sb.Build())
+}
+
+func (b *ObjectBuilder) KV(hook func(kb *KVBuilder)) {
+	sb := NewKVBuilder()
 	hook(sb)
 	b.entries = append(b.entries, sb.Build())
 }
@@ -79,7 +85,7 @@ type SpreadBuilder struct {
 	v        ast.Var
 }
 
-func newSpreadBuilder() *SpreadBuilder {
+func NewSpreadBuilder() *SpreadBuilder {
 	return &SpreadBuilder{}
 }
 
@@ -88,7 +94,7 @@ func (b *SpreadBuilder) Location(location types.Location) {
 }
 
 func (b *SpreadBuilder) Var(hook func(vb *VarBuilder)) {
-	vb := newVarBuilder()
+	vb := NewVarBuilder()
 	hook(vb)
 	b.v = vb.Build()
 }
@@ -101,7 +107,7 @@ type VarBuilder struct {
 	path []ast.Ident
 }
 
-func newVarBuilder() *VarBuilder {
+func NewVarBuilder() *VarBuilder {
 	return &VarBuilder{}
 }
 
@@ -111,4 +117,33 @@ func (b *VarBuilder) Part(part ast.Ident) {
 
 func (b *VarBuilder) Build() ast.Var {
 	return ast.NewVar(b.path)
+}
+
+type KVBuilder struct {
+	key   ast.Ident
+	value ast.Expression
+}
+
+func NewKVBuilder() *KVBuilder {
+	return &KVBuilder{}
+}
+
+func (b *KVBuilder) Key(key ast.Ident) *KVBuilder {
+	b.key = key
+	return b
+}
+
+func (b *KVBuilder) Value(value ast.Expression) *KVBuilder {
+	b.value = value
+	return b
+}
+
+func (b *KVBuilder) Var(hook func(vb *VarBuilder)) *KVBuilder {
+	vb := NewVarBuilder()
+	hook(vb)
+	return b.Value(vb.Build())
+}
+
+func (b *KVBuilder) Build() ast.KV {
+	return ast.NewKV(b.key, b.value)
 }

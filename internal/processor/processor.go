@@ -11,19 +11,21 @@ import (
 )
 
 type Processor struct {
+	os        OS
 	lexer     Lexer
 	parser    Parser
+	analyzer  Analyzer
 	linker    Linker
-	os        OS
 	astByPath map[string]ast.WithPath
 }
 
-func New(lexer Lexer, parser Parser, linker Linker, os OS) *Processor {
+func New(lexer Lexer, parser Parser, analyzer Analyzer, linker Linker, os OS) *Processor {
 	return &Processor{
+		os:        os,
 		lexer:     lexer,
 		parser:    parser,
+		analyzer:  analyzer,
 		linker:    linker,
-		os:        os,
 		astByPath: make(map[string]ast.WithPath),
 	}
 }
@@ -100,6 +102,10 @@ func (p *Processor) makeAst(path string) (ast.Ast, error) {
 	a, err := p.parser.Parse(tokenmover.New(tokens))
 	if err != nil {
 		return ast.Ast{}, errors.Wrap(err, "parse")
+	}
+
+	if err = p.analyzer.Analyze(a); err != nil {
+		return ast.Ast{}, errors.Wrapf(err, "semantic analyzer error: file: %s", path)
 	}
 
 	return a, nil

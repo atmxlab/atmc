@@ -1,4 +1,4 @@
-package semantic
+package analyzer
 
 import "github.com/atmxlab/atmcfg/pkg/errors"
 

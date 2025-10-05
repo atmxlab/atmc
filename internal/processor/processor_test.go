@@ -84,7 +84,7 @@ func (s *TestProcessSuite) TestHappyPath() {
 		require.Equal(s.T(), expectedParam.ASTByPath, param.ASTByPath)
 		require.Equal(s.T(), expectedParam.Env, param.Env)
 
-		return testlinkedast.NewAstBuilder().Build(), nil
+		return testlinkedast.NewBuilder().Build(), nil
 	})
 
 	// Act

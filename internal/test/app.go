@@ -3,6 +3,7 @@ package test
 import (
 	"testing"
 
+	"github.com/atmxlab/atmcfg/internal/analyzer"
 	"github.com/atmxlab/atmcfg/internal/lexer"
 	"github.com/atmxlab/atmcfg/internal/linker"
 	"github.com/atmxlab/atmcfg/internal/parser"
@@ -42,6 +43,7 @@ func NewApp(t *testing.T, opts ...ConfigOpt) *App {
 	p := processor.New(
 		lexer.New(),
 		parser.New(),
+		analyzer.New(),
 		linker.New(),
 		cfg.os,
 	)
