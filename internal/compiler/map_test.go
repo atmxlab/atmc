@@ -64,6 +64,5 @@ func TestMapCompiler(t *testing.T) {
 		m, err := mc.Compile(a)
 		require.NoError(t, err)
 		testutils.AssertEmptyDiff(t, expectedMap, m)
-		// require.Equal(t, expectedMap, m)
 	})
 }
