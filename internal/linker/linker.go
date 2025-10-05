@@ -8,20 +8,6 @@ import (
 	"github.com/samber/lo"
 )
 
-// Path to config.
-type Path string
-
-func (p Path) String() string {
-	return string(p)
-}
-
-// Name of import.
-type Name string
-
-type OS interface {
-	AbsPath(baseDir, relPath string) (string, error)
-}
-
 type Linker struct {
 	// Необходим, чтобы линковать импортированные ast.
 	astByPath map[string]ast.WithPath

@@ -21,3 +21,6 @@ deadcode\:install:
 
 clean\:testcache:
 	go clean -testcache
+
+run:
+	go run ./cmd

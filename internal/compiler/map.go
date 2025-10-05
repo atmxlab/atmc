@@ -12,8 +12,15 @@ func NewMapCompiler() *MapCompiler {
 	return &MapCompiler{}
 }
 
-func (c *MapCompiler) Compile(a linkedast.Ast) (map[string]any, error) {
-	return c.compileObj(a.Object())
+func (c *MapCompiler) Compile(t map[string]any, a linkedast.Ast) error {
+	compiled, err := c.compileObj(a.Object())
+	if err != nil {
+		return err
+	}
+	for k, v := range compiled {
+		t[k] = v
+	}
+	return nil
 }
 
 func (c *MapCompiler) compileObj(obj linkedast.Object) (map[string]any, error) {

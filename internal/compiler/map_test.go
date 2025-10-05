@@ -61,8 +61,9 @@ func TestMapCompiler(t *testing.T) {
 
 		mc := compiler.NewMapCompiler()
 
-		m, err := mc.Compile(a)
+		actualMap := make(map[string]any)
+		err := mc.Compile(actualMap, a)
 		require.NoError(t, err)
-		testutils.AssertEmptyDiff(t, expectedMap, m)
+		testutils.AssertEmptyDiff(t, expectedMap, actualMap)
 	})
 }
