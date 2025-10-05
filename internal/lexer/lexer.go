@@ -41,8 +41,8 @@ func (l *Lexer) Tokenize(input string) ([]token.Token, error) {
 			matched = true
 
 			switch t {
-			case token.WS, token.Comma:
-				// Ничего не делаем. Просто игнорируем пробелы и запятые.
+			case token.WS, token.Comma, token.Comment:
+				// Ничего не делаем. Просто игнорируем пробелы, запятые и комментарии.
 			case token.EOL:
 				l.location = l.location.SetEnd(
 					l.location.End().
@@ -66,16 +66,18 @@ func (l *Lexer) Tokenize(input string) ([]token.Token, error) {
 
 	result := l.tokens
 
-	// TODO: fixme
+	// TODO: need refactor
 	l.tokens = make([]token.Token, 0)
 
 	return result, nil
 }
 
 func (l *Lexer) addToken(t token.Type, value string) {
+	// TODO: need refactor
 	if t == token.String {
 		value = strings.Trim(value, "\"")
 	}
+
 	tok := token.New(
 		t,
 		token.Value(value),

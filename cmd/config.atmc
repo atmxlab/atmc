@@ -1,11 +1,9 @@
+common ./common.atmc
+
 {
-    a: 123,
-    b: 321,
-    c: "qwerty"
-    d: "test",
-    e: [1, "test", 2, 3, 4.12345, false, true]
-    f: {
-        a: 444,
-        b: 555
-    }
+  common... // встраиваем общий конфиг
+  logging: {
+    level: ["warn", "error"]
+    enabled_tracing: true
+  }
 }

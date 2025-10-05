@@ -146,6 +146,19 @@ func TestLexer_Tokenize_TokenTypes(t *testing.T) {
 			},
 		},
 		{
+			name:          "comment",
+			input:         `// comment`,
+			expectedTypes: []token.Type{},
+		},
+		{
+			name:  "comment",
+			input: `common... // comment`,
+			expectedTypes: []token.Type{
+				token.Ident,
+				token.Spread,
+			},
+		},
+		{
 			name:  "nested import import",
 			input: `common /dir1/dir2/common.atmx`,
 			expectedTypes: []token.Type{

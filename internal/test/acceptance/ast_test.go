@@ -139,7 +139,7 @@ func TestAstGenerate(t *testing.T) {
 							types.NewPosition(12, 2, 145),
 							types.NewPosition(12, 8, 151),
 						)),
-						ast.NewString(`"test string \"escaped"`, types.NewLocation(
+						ast.NewString(`test string \"escaped`, types.NewLocation(
 							types.NewPosition(12, 10, 153),
 							types.NewPosition(12, 33, 176),
 						)),
@@ -281,7 +281,7 @@ func TestAstGenerate(t *testing.T) {
 						)),
 						ast.NewArray(
 							[]ast.Expression{
-								ast.NewString(`"test text"`, types.NewLocation(
+								ast.NewString(`test text`, types.NewLocation(
 									types.NewPosition(26, 19, 375),
 									types.NewPosition(26, 30, 386),
 								)),
@@ -353,7 +353,7 @@ func TestAstGenerate(t *testing.T) {
 						)),
 						ast.NewArray(
 							[]ast.Expression{
-								ast.NewString(`"test text"`, types.NewLocation(
+								ast.NewString(`test text`, types.NewLocation(
 									types.NewPosition(27, 22, 485),
 									types.NewPosition(27, 33, 496),
 								)),

@@ -66,6 +66,7 @@ const (
 	Ident
 	Path
 	Dot
+	Comment
 )
 
 var typeRegexps = map[Type]*regexp.Regexp{
@@ -86,6 +87,7 @@ var typeRegexps = map[Type]*regexp.Regexp{
 	Ident:    regexp.MustCompile("^[a-zA-Z_][a-zA-Z0-9_]*"),
 	Path:     regexp.MustCompile("^(?:/|\\./)[a-zA-Z0-9._/-]+"),
 	Dollar:   regexp.MustCompile("^\\$"),
+	Comment:  regexp.MustCompile(`^//.*`),
 }
 
 func (t Type) Regexp() *regexp.Regexp {
@@ -101,6 +103,7 @@ func OrderedTokenTypes() []Type {
 	return []Type{
 		WS,
 		EOL,
+		Comment,
 		String,
 		Path,
 		Bool,
