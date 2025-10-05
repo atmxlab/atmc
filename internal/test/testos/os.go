@@ -36,7 +36,11 @@ func NewOSBuilder() *OSBuilder {
 	}
 }
 
-func (osb *OSBuilder) Content(path string, content []byte) *OSBuilder {
+func (osb *OSBuilder) File(hook func(fb *FileBuilder)) *OSBuilder {
+	fb := NewFileBuilder()
+	hook(fb)
+	path, content := fb.Build()
+
 	osb.contentByFile[path] = content
 	return osb
 }
@@ -45,4 +49,27 @@ func (osb *OSBuilder) Build() OS {
 	return OS{
 		contentByFile: osb.contentByFile,
 	}
+}
+
+type FileBuilder struct {
+	path    string
+	content []byte
+}
+
+func NewFileBuilder() *FileBuilder {
+	return &FileBuilder{}
+}
+
+func (fb *FileBuilder) Path(path string) *FileBuilder {
+	fb.path = path
+	return fb
+}
+
+func (fb *FileBuilder) Content(content string) *FileBuilder {
+	fb.content = []byte(content)
+	return fb
+}
+
+func (fb *FileBuilder) Build() (string, []byte) {
+	return fb.path, fb.content
 }

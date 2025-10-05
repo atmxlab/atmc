@@ -260,7 +260,7 @@ func (l *Linker) findVariableExp(scp scope, v ast.Var) (linkedast.Expression, er
 		return nil, errors.New("import for variable not found")
 	}
 
-	node, err := linkedAst.FindExpByPath(lo.Map(v.Path(), func(item ast.Ident, _ int) linkedast.Ident {
+	node, err := linkedAst.FindExpByPath(lo.Map(v.Path()[1:], func(item ast.Ident, _ int) linkedast.Ident {
 		return linkedast.NewIdent(item.String())
 	}))
 	if err != nil {

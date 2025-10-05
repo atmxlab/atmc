@@ -32,13 +32,12 @@ func (o Object) FindExpByPath(path []Ident) (Expression, error) {
 }
 
 func (o Object) findExpByPath(path []Ident) (Expression, error) {
-	i := 0
 	for _, kv := range o.kv {
-		if kv.Key().String() != path[i].String() {
+		if kv.Key().String() != path[0].String() {
 			continue
 		}
 
-		if i == len(path)-1 {
+		if len(path) == 1 {
 			return kv.Value(), nil
 		}
 

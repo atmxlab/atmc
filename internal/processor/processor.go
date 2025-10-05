@@ -5,6 +5,7 @@ import (
 
 	"github.com/atmxlab/atmcfg/internal/lexer/tokenmover"
 	"github.com/atmxlab/atmcfg/internal/linker"
+	linkedast "github.com/atmxlab/atmcfg/internal/linker/ast"
 	"github.com/atmxlab/atmcfg/internal/parser/ast"
 	"github.com/atmxlab/atmcfg/pkg/errors"
 )
@@ -27,26 +28,26 @@ func New(lexer Lexer, parser Parser, linker Linker, os OS) *Processor {
 	}
 }
 
-func (p *Processor) Process(path string) error {
+func (p *Processor) Process(path string) (linkedast.Ast, error) {
 	absPath, err := p.os.AbsPath(path, ".")
 	if err != nil {
-		return errors.Wrap(err, "get abs path")
+		return linkedast.Ast{}, errors.Wrap(err, "get abs path")
 	}
 
 	if err = p.process(absPath, newEmptyImportStack()); err != nil {
-		return errors.Wrap(err, "process")
+		return linkedast.Ast{}, errors.Wrap(err, "process")
 	}
 
-	_, err = p.linker.Link(linker.LinkParam{
+	linkedAst, err := p.linker.Link(linker.LinkParam{
 		MainAst:   p.astByPath[absPath],
 		ASTByPath: p.astByPath,
 		Env:       nil,
 	})
 	if err != nil {
-		return errors.Wrap(err, "linker.Link")
+		return linkedast.Ast{}, errors.Wrap(err, "linker.Link")
 	}
 
-	return nil
+	return linkedAst, nil
 }
 
 func (p *Processor) process(path string, iStack importStack) error {

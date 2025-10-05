@@ -88,7 +88,7 @@ func (s *TestProcessSuite) TestHappyPath() {
 	})
 
 	// Act
-	err := s.processer.Process(configPath)
+	_, err := s.processer.Process(configPath)
 
 	// Assert
 	require.NoError(s.T(), err)

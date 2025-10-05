@@ -1,4 +1,4 @@
-package test
+package acceptance
 
 import (
 	"testing"
