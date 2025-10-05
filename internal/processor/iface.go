@@ -12,6 +12,7 @@ import (
 type OS interface {
 	ReadFile(string) ([]byte, error)
 	AbsPath(baseDir, relPath string) (string, error)
+	EnvVariables() map[string]string
 }
 
 //go:generate mock Parser

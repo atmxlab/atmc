@@ -53,6 +53,20 @@ func (mr *MockOSMockRecorder) AbsPath(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AbsPath", reflect.TypeOf((*MockOS)(nil).AbsPath), arg0, arg1)
 }
 
+// EnvVariables mocks base method.
+func (m *MockOS) EnvVariables() map[string]string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EnvVariables")
+	ret0, _ := ret[0].(map[string]string)
+	return ret0
+}
+
+// EnvVariables indicates an expected call of EnvVariables.
+func (mr *MockOSMockRecorder) EnvVariables() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnvVariables", reflect.TypeOf((*MockOS)(nil).EnvVariables))
+}
+
 // ReadFile mocks base method.
 func (m *MockOS) ReadFile(arg0 string) ([]byte, error) {
 	m.ctrl.T.Helper()

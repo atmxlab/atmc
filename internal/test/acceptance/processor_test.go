@@ -3,6 +3,7 @@ package acceptance
 import (
 	"testing"
 
+	"github.com/atmxlab/atmcfg/internal/linker"
 	linkedast "github.com/atmxlab/atmcfg/internal/linker/ast"
 	"github.com/atmxlab/atmcfg/internal/parser"
 	"github.com/atmxlab/atmcfg/internal/test"
@@ -59,6 +60,44 @@ func TestProcessor_WithErrors(t *testing.T) {
 
 		_, err := app.Processor().Process(mainFilePath)
 		require.ErrorIs(t, err, parser.ErrTokenNotExist)
+	})
+
+	t.Run("with_array_spread_to_object", func(t *testing.T) {
+		t.Parallel()
+
+		mainFilePath := "/home/user/config.atmc"
+
+		os := testos.NewOSBuilder().
+			File(func(fb *testos.FileBuilder) {
+				fb.
+					Path(mainFilePath).
+					Content(`
+var1 ./import1.atmc
+
+{
+	a: var1.c, 
+	b: var1.d,
+	var1.c...
+}
+`)
+			}).
+			File(func(fb *testos.FileBuilder) {
+				fb.
+					Path("/home/user/import1.atmc").
+					Content("{c: [3, 4, 5], d: 6}")
+			}).
+			Env(func(eb *testos.EnvBuilder) {
+				eb.
+					Key("password").
+					Value("qwerty")
+			}).
+			Build()
+
+		app := test.NewApp(t, test.WithOS(os))
+
+		_, err := app.Processor().Process(mainFilePath)
+		require.ErrorIs(t, err, linker.ErrUnexpectedNodeType)
+		require.ErrorContains(t, err, "expected: Object")
 	})
 }
 
@@ -222,6 +261,426 @@ func TestProcessor_HappyPath(t *testing.T) {
 						kvb.
 							Key(linkedast.NewIdent("b")).
 							Value(linkedast.NewInt(4))
+					})
+			}).
+			Build()
+
+		require.Equal(t, expectedAst, a)
+	})
+
+	t.Run("array_variable", func(t *testing.T) {
+		t.Parallel()
+
+		mainFilePath := "/home/user/config.atmc"
+
+		os := testos.NewOSBuilder().
+			File(func(fb *testos.FileBuilder) {
+				fb.
+					Path(mainFilePath).
+					Content(`
+var1 ./import.atmc
+
+{
+	a: var1.c.nested1.nested2,
+	b: var1.d
+}
+`)
+			}).
+			File(func(fb *testos.FileBuilder) {
+				fb.
+					Path("/home/user/import.atmc").
+					Content(`
+{
+	c: {
+		nested1: {
+					nested2: [1, 2, 3, 4, 5]
+				}
+	}, 
+	d: 4
+}
+`)
+			}).
+			Build()
+
+		app := test.NewApp(t, test.WithOS(os))
+
+		a, err := app.Processor().Process(mainFilePath)
+		require.NoError(t, err)
+
+		expectedAst := testlinkedast.
+			NewBuilder().
+			Object(func(ob *testlinkedast.ObjectBuilder) {
+				ob.
+					KV(func(kvb *testlinkedast.KVBuilder) {
+						kvb.
+							Key(linkedast.NewIdent("a")).
+							Value(testlinkedast.
+								NewArrayBuilder().
+								Element(linkedast.NewInt(1)).
+								Element(linkedast.NewInt(2)).
+								Element(linkedast.NewInt(3)).
+								Element(linkedast.NewInt(4)).
+								Element(linkedast.NewInt(5)).
+								Build())
+					}).
+					KV(func(kvb *testlinkedast.KVBuilder) {
+						kvb.
+							Key(linkedast.NewIdent("b")).
+							Value(linkedast.NewInt(4))
+					})
+			}).
+			Build()
+
+		require.Equal(t, expectedAst, a)
+	})
+
+	t.Run("several_imports", func(t *testing.T) {
+		t.Parallel()
+
+		mainFilePath := "/home/user/config.atmc"
+
+		os := testos.NewOSBuilder().
+			File(func(fb *testos.FileBuilder) {
+				fb.
+					Path(mainFilePath).
+					Content(`
+var1 ./import1.atmc
+var2 ./import2.atmc
+
+{
+	a: var1.c, 
+	b: var2.i
+}
+`)
+			}).
+			File(func(fb *testos.FileBuilder) {
+				fb.
+					Path("/home/user/import1.atmc").
+					Content("{c: 3, d: 4}")
+			}).
+			File(func(fb *testos.FileBuilder) {
+				fb.
+					Path("/home/user/import2.atmc").
+					Content("{i: 5, f: 6}")
+			}).
+			Build()
+
+		app := test.NewApp(t, test.WithOS(os))
+
+		a, err := app.Processor().Process(mainFilePath)
+		require.NoError(t, err)
+
+		expectedAst := testlinkedast.
+			NewBuilder().
+			Object(func(ob *testlinkedast.ObjectBuilder) {
+				ob.
+					KV(func(kvb *testlinkedast.KVBuilder) {
+						kvb.
+							Key(linkedast.NewIdent("a")).
+							Value(linkedast.NewInt(3))
+					}).
+					KV(func(kvb *testlinkedast.KVBuilder) {
+						kvb.
+							Key(linkedast.NewIdent("b")).
+							Value(linkedast.NewInt(5))
+					})
+			}).
+			Build()
+
+		require.Equal(t, expectedAst, a)
+	})
+
+	t.Run("with_env_variables", func(t *testing.T) {
+		t.Parallel()
+
+		mainFilePath := "/home/user/config.atmc"
+
+		os := testos.NewOSBuilder().
+			File(func(fb *testos.FileBuilder) {
+				fb.
+					Path(mainFilePath).
+					Content(`
+var1 ./import1.atmc
+
+{
+	a: var1.c, 
+	b: var1.d,
+	object1: {
+		password: $password
+	}
+}
+`)
+			}).
+			File(func(fb *testos.FileBuilder) {
+				fb.
+					Path("/home/user/import1.atmc").
+					Content("{c: 3, d: 4}")
+			}).
+			Env(func(eb *testos.EnvBuilder) {
+				eb.
+					Key("password").
+					Value("qwerty")
+			}).
+			Build()
+
+		app := test.NewApp(t, test.WithOS(os))
+
+		a, err := app.Processor().Process(mainFilePath)
+		require.NoError(t, err)
+
+		expectedAst := testlinkedast.
+			NewBuilder().
+			Object(func(ob *testlinkedast.ObjectBuilder) {
+				ob.
+					KV(func(kvb *testlinkedast.KVBuilder) {
+						kvb.
+							Key(linkedast.NewIdent("a")).
+							Value(linkedast.NewInt(3))
+					}).
+					KV(func(kvb *testlinkedast.KVBuilder) {
+						kvb.
+							Key(linkedast.NewIdent("b")).
+							Value(linkedast.NewInt(4))
+					}).
+					KV(func(kvb *testlinkedast.KVBuilder) {
+						kvb.
+							Key(linkedast.NewIdent("object1")).
+							Value(testlinkedast.NewObjectBuilder().KV(func(kvb *testlinkedast.KVBuilder) {
+								kvb.
+									Key(linkedast.NewIdent("password")).
+									Value(linkedast.NewString("qwerty"))
+							}).Build())
+					})
+			}).
+			Build()
+
+		require.Equal(t, expectedAst, a)
+	})
+
+	t.Run("with_object_spread", func(t *testing.T) {
+		t.Parallel()
+
+		mainFilePath := "/home/user/config.atmc"
+
+		os := testos.NewOSBuilder().
+			File(func(fb *testos.FileBuilder) {
+				fb.
+					Path(mainFilePath).
+					Content(`
+var1 ./import1.atmc
+
+{
+	a: var1.c, 
+	b: var1.d,
+	var1...
+}
+`)
+			}).
+			File(func(fb *testos.FileBuilder) {
+				fb.
+					Path("/home/user/import1.atmc").
+					Content("{c: 3, d: 4}")
+			}).
+			Build()
+
+		app := test.NewApp(t, test.WithOS(os))
+
+		a, err := app.Processor().Process(mainFilePath)
+		require.NoError(t, err)
+
+		expectedAst := testlinkedast.
+			NewBuilder().
+			Object(func(ob *testlinkedast.ObjectBuilder) {
+				ob.
+					KV(func(kvb *testlinkedast.KVBuilder) {
+						kvb.
+							Key(linkedast.NewIdent("a")).
+							Value(linkedast.NewInt(3))
+					}).
+					KV(func(kvb *testlinkedast.KVBuilder) {
+						kvb.
+							Key(linkedast.NewIdent("b")).
+							Value(linkedast.NewInt(4))
+					}).
+					KV(func(kvb *testlinkedast.KVBuilder) {
+						kvb.
+							Key(linkedast.NewIdent("c")).
+							Value(linkedast.NewInt(3))
+					}).
+					KV(func(kvb *testlinkedast.KVBuilder) {
+						kvb.
+							Key(linkedast.NewIdent("d")).
+							Value(linkedast.NewInt(4))
+					})
+			}).
+			Build()
+
+		require.Equal(t, expectedAst, a)
+	})
+
+	t.Run("with_array_spread", func(t *testing.T) {
+		t.Parallel()
+
+		mainFilePath := "/home/user/config.atmc"
+
+		os := testos.NewOSBuilder().
+			File(func(fb *testos.FileBuilder) {
+				fb.
+					Path(mainFilePath).
+					Content(`
+var1 ./import1.atmc
+
+{
+	a: var1.c, 
+	b: [1, 2, var1.d..., 6, 7],
+}
+`)
+			}).
+			File(func(fb *testos.FileBuilder) {
+				fb.
+					Path("/home/user/import1.atmc").
+					Content("{c: 3, d: [3, 4, 5]}")
+			}).
+			Build()
+
+		app := test.NewApp(t, test.WithOS(os))
+
+		a, err := app.Processor().Process(mainFilePath)
+		require.NoError(t, err)
+
+		expectedAst := testlinkedast.
+			NewBuilder().
+			Object(func(ob *testlinkedast.ObjectBuilder) {
+				ob.
+					KV(func(kvb *testlinkedast.KVBuilder) {
+						kvb.
+							Key(linkedast.NewIdent("a")).
+							Value(linkedast.NewInt(3))
+					}).
+					KV(func(kvb *testlinkedast.KVBuilder) {
+						kvb.
+							Key(linkedast.NewIdent("b")).
+							Value(testlinkedast.NewArrayBuilder().
+								Element(linkedast.NewInt(1)).
+								Element(linkedast.NewInt(2)).
+								Element(linkedast.NewInt(3)).
+								Element(linkedast.NewInt(4)).
+								Element(linkedast.NewInt(5)).
+								Element(linkedast.NewInt(6)).
+								Element(linkedast.NewInt(7)).
+								Build())
+					})
+			}).
+			Build()
+
+		require.Equal(t, expectedAst, a)
+	})
+
+	t.Run("override_with_spread", func(t *testing.T) {
+		t.Parallel()
+
+		mainFilePath := "/home/user/config.atmc"
+
+		os := testos.NewOSBuilder().
+			File(func(fb *testos.FileBuilder) {
+				fb.
+					Path(mainFilePath).
+					Content(`
+var1 ./import1.atmc
+
+{
+	a: 1, 
+	b: 2,
+	var1...
+}
+`)
+			}).
+			File(func(fb *testos.FileBuilder) {
+				fb.
+					Path("/home/user/import1.atmc").
+					Content("{a: 3, b: 4, c: 5}")
+			}).
+			Build()
+
+		app := test.NewApp(t, test.WithOS(os))
+
+		a, err := app.Processor().Process(mainFilePath)
+		require.NoError(t, err)
+
+		expectedAst := testlinkedast.
+			NewBuilder().
+			Object(func(ob *testlinkedast.ObjectBuilder) {
+				ob.
+					KV(func(kvb *testlinkedast.KVBuilder) {
+						kvb.
+							Key(linkedast.NewIdent("a")).
+							Value(linkedast.NewInt(3))
+					}).
+					KV(func(kvb *testlinkedast.KVBuilder) {
+						kvb.
+							Key(linkedast.NewIdent("b")).
+							Value(linkedast.NewInt(4))
+					}).
+					KV(func(kvb *testlinkedast.KVBuilder) {
+						kvb.
+							Key(linkedast.NewIdent("c")).
+							Value(linkedast.NewInt(5))
+					})
+			}).
+			Build()
+
+		require.Equal(t, expectedAst, a)
+	})
+
+	t.Run("override_after_spread", func(t *testing.T) {
+		t.Parallel()
+
+		mainFilePath := "/home/user/config.atmc"
+
+		os := testos.NewOSBuilder().
+			File(func(fb *testos.FileBuilder) {
+				fb.
+					Path(mainFilePath).
+					Content(`
+var1 ./import1.atmc
+
+{
+	var1...,
+	a: 1, 
+	b: 2,
+}
+`)
+			}).
+			File(func(fb *testos.FileBuilder) {
+				fb.
+					Path("/home/user/import1.atmc").
+					Content("{a: 3, b: 4, c: 5}")
+			}).
+			Build()
+
+		app := test.NewApp(t, test.WithOS(os))
+
+		a, err := app.Processor().Process(mainFilePath)
+		require.NoError(t, err)
+
+		expectedAst := testlinkedast.
+			NewBuilder().
+			Object(func(ob *testlinkedast.ObjectBuilder) {
+				ob.
+					KV(func(kvb *testlinkedast.KVBuilder) {
+						kvb.
+							Key(linkedast.NewIdent("a")).
+							Value(linkedast.NewInt(1))
+					}).
+					KV(func(kvb *testlinkedast.KVBuilder) {
+						kvb.
+							Key(linkedast.NewIdent("b")).
+							Value(linkedast.NewInt(2))
+					}).
+					KV(func(kvb *testlinkedast.KVBuilder) {
+						kvb.
+							Key(linkedast.NewIdent("c")).
+							Value(linkedast.NewInt(5))
 					})
 			}).
 			Build()

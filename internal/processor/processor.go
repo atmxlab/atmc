@@ -41,7 +41,7 @@ func (p *Processor) Process(path string) (linkedast.Ast, error) {
 	linkedAst, err := p.linker.Link(linker.LinkParam{
 		MainAst:   p.astByPath[absPath],
 		ASTByPath: p.astByPath,
-		Env:       nil,
+		Env:       p.os.EnvVariables(),
 	})
 	if err != nil {
 		return linkedast.Ast{}, errors.Wrap(err, "linker.Link")

@@ -4,6 +4,7 @@ import (
 	linkedast "github.com/atmxlab/atmcfg/internal/linker/ast"
 	"github.com/atmxlab/atmcfg/internal/parser/ast"
 	"github.com/atmxlab/atmcfg/pkg/errors"
+	"github.com/atmxlab/atmcfg/pkg/orderedmap"
 	"github.com/samber/lo"
 )
 
@@ -111,7 +112,7 @@ func (l *Linker) linkObject(scp scope, obj ast.Object) (linkedast.Object, error)
 }
 
 func (l *Linker) linkEntries(scp scope, entries []ast.Entry) ([]linkedast.KV, error) {
-	kv := make([]linkedast.KV, 0, len(entries))
+	kvMap := orderedmap.NewOrderedMap[linkedast.Ident, linkedast.KV]()
 
 	for _, entry := range entries {
 		switch e := entry.(type) {
@@ -120,20 +121,22 @@ func (l *Linker) linkEntries(scp scope, entries []ast.Entry) ([]linkedast.KV, er
 			if err != nil {
 				return nil, errors.Wrap(err, "link kv")
 			}
-			kv = append(kv, ent)
+			kvMap.Set(ent.Key(), ent)
 		case ast.Spread:
 			spreadEntries, err := l.linkObjectSpread(scp, e)
 			if err != nil {
 				return nil, errors.Wrap(err, "link spread")
 			}
 
-			kv = append(kv, spreadEntries...)
+			for _, spreadEntry := range spreadEntries {
+				kvMap.Set(spreadEntry.Key(), spreadEntry)
+			}
 		default:
 			return nil, errors.New("unknown entry type")
 		}
 	}
 
-	return kv, nil
+	return kvMap.Values(), nil
 }
 
 func (l *Linker) linkKV(scp scope, kv ast.KV) (linkedast.KV, error) {
@@ -185,7 +188,7 @@ func (l *Linker) linkObjectSpread(scp scope, spread ast.Spread) ([]linkedast.KV,
 
 	obj, ok := node.(linkedast.Object)
 	if !ok {
-		return []linkedast.KV{}, errors.New("unexpected node type")
+		return nil, errors.Wrap(ErrUnexpectedNodeType, "expected: Object")
 	}
 
 	return obj.KV(), nil
@@ -199,7 +202,7 @@ func (l *Linker) linkArraySpread(scp scope, spread ast.Spread) ([]linkedast.Expr
 
 	arr, ok := node.(linkedast.Array)
 	if !ok {
-		return nil, errors.New("unexpected node type")
+		return nil, errors.Wrap(ErrUnexpectedNodeType, "expected: Array")
 	}
 
 	return arr.Elements(), nil
