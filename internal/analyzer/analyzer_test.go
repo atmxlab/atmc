@@ -11,7 +11,7 @@ import (
 func TestAnalyzer_Analyze(t *testing.T) {
 	t.Parallel()
 
-	t.Run("unused import variable", func(t *testing.T) {
+	t.Run("unused_import_variable", func(t *testing.T) {
 		t.Parallel()
 
 		b := testast.NewAstBuilder()
@@ -27,7 +27,7 @@ func TestAnalyzer_Analyze(t *testing.T) {
 		require.ErrorIs(t, err, semantic.ErrUnusedVariable)
 	})
 
-	t.Run("undefined spread variable", func(t *testing.T) {
+	t.Run("undefined_spread_variable", func(t *testing.T) {
 		t.Parallel()
 
 		b := testast.NewAstBuilder()
@@ -38,6 +38,27 @@ func TestAnalyzer_Analyze(t *testing.T) {
 					vb.Part(testast.NewIdent("var_part1"))
 					vb.Part(testast.NewIdent("var_part2"))
 				})
+			})
+		})
+
+		a := semantic.NewAnalyzer()
+
+		err := a.Analyze(b.Build())
+		require.ErrorIs(t, err, semantic.ErrUndefinedVariable)
+	})
+
+	t.Run("undefined_variable", func(t *testing.T) {
+		t.Parallel()
+
+		b := testast.NewAstBuilder()
+
+		b.Object(func(ob *testast.ObjectBuilder) {
+			ob.KV(func(kb *testast.KVBuilder) {
+				kb.
+					Key(testast.NewIdent("key1")).
+					Var(func(vb *testast.VarBuilder) {
+						vb.Part(testast.NewIdent("var1"))
+					})
 			})
 		})
 
