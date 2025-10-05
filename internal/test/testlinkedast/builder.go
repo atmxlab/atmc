@@ -49,8 +49,8 @@ func NewKVBuilder() *KVBuilder {
 	return &KVBuilder{}
 }
 
-func (b *KVBuilder) Key(key linkedast.Ident) *KVBuilder {
-	b.key = key
+func (b *KVBuilder) Key(key string) *KVBuilder {
+	b.key = linkedast.NewIdent(key)
 	return b
 }
 

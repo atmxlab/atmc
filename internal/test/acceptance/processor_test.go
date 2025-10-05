@@ -225,11 +225,11 @@ func TestProcessor_HappyPath(t *testing.T) {
 			Object(func(ob *testlinkedast.ObjectBuilder) {
 				ob.
 					KV(func(kvb *testlinkedast.KVBuilder) {
-						kvb.Key(linkedast.NewIdent("a")).
+						kvb.Key("a").
 							Value(linkedast.NewInt(1))
 					}).
 					KV(func(kvb *testlinkedast.KVBuilder) {
-						kvb.Key(linkedast.NewIdent("b")).
+						kvb.Key("b").
 							Value(linkedast.NewInt(2))
 					})
 			}).
@@ -267,12 +267,12 @@ func TestProcessor_HappyPath(t *testing.T) {
 				ob.
 					KV(func(kvb *testlinkedast.KVBuilder) {
 						kvb.
-							Key(linkedast.NewIdent("a")).
+							Key("a").
 							Value(linkedast.NewInt(3))
 					}).
 					KV(func(kvb *testlinkedast.KVBuilder) {
 						kvb.
-							Key(linkedast.NewIdent("b")).
+							Key("b").
 							Value(linkedast.NewInt(4))
 					})
 			}).
@@ -310,12 +310,12 @@ func TestProcessor_HappyPath(t *testing.T) {
 				ob.
 					KV(func(kvb *testlinkedast.KVBuilder) {
 						kvb.
-							Key(linkedast.NewIdent("a")).
+							Key("a").
 							Value(linkedast.NewInt(55))
 					}).
 					KV(func(kvb *testlinkedast.KVBuilder) {
 						kvb.
-							Key(linkedast.NewIdent("b")).
+							Key("b").
 							Value(linkedast.NewInt(4))
 					})
 			}).
@@ -369,7 +369,7 @@ var1 ./import.atmc
 				ob.
 					KV(func(kvb *testlinkedast.KVBuilder) {
 						kvb.
-							Key(linkedast.NewIdent("a")).
+							Key("a").
 							Value(testlinkedast.
 								NewArrayBuilder().
 								Element(linkedast.NewInt(1)).
@@ -381,7 +381,7 @@ var1 ./import.atmc
 					}).
 					KV(func(kvb *testlinkedast.KVBuilder) {
 						kvb.
-							Key(linkedast.NewIdent("b")).
+							Key("b").
 							Value(linkedast.NewInt(4))
 					})
 			}).
@@ -432,12 +432,12 @@ var2 ./import2.atmc
 				ob.
 					KV(func(kvb *testlinkedast.KVBuilder) {
 						kvb.
-							Key(linkedast.NewIdent("a")).
+							Key("a").
 							Value(linkedast.NewInt(3))
 					}).
 					KV(func(kvb *testlinkedast.KVBuilder) {
 						kvb.
-							Key(linkedast.NewIdent("b")).
+							Key("b").
 							Value(linkedast.NewInt(5))
 					})
 			}).
@@ -490,20 +490,20 @@ var1 ./import1.atmc
 				ob.
 					KV(func(kvb *testlinkedast.KVBuilder) {
 						kvb.
-							Key(linkedast.NewIdent("a")).
+							Key("a").
 							Value(linkedast.NewInt(3))
 					}).
 					KV(func(kvb *testlinkedast.KVBuilder) {
 						kvb.
-							Key(linkedast.NewIdent("b")).
+							Key("b").
 							Value(linkedast.NewInt(4))
 					}).
 					KV(func(kvb *testlinkedast.KVBuilder) {
 						kvb.
-							Key(linkedast.NewIdent("object1")).
+							Key("object1").
 							Value(testlinkedast.NewObjectBuilder().KV(func(kvb *testlinkedast.KVBuilder) {
 								kvb.
-									Key(linkedast.NewIdent("password")).
+									Key("password").
 									Value(linkedast.NewString("qwerty"))
 							}).Build())
 					})
@@ -550,22 +550,22 @@ var1 ./import1.atmc
 				ob.
 					KV(func(kvb *testlinkedast.KVBuilder) {
 						kvb.
-							Key(linkedast.NewIdent("a")).
+							Key("a").
 							Value(linkedast.NewInt(3))
 					}).
 					KV(func(kvb *testlinkedast.KVBuilder) {
 						kvb.
-							Key(linkedast.NewIdent("b")).
+							Key("b").
 							Value(linkedast.NewInt(4))
 					}).
 					KV(func(kvb *testlinkedast.KVBuilder) {
 						kvb.
-							Key(linkedast.NewIdent("c")).
+							Key("c").
 							Value(linkedast.NewInt(3))
 					}).
 					KV(func(kvb *testlinkedast.KVBuilder) {
 						kvb.
-							Key(linkedast.NewIdent("d")).
+							Key("d").
 							Value(linkedast.NewInt(4))
 					})
 			}).
@@ -610,12 +610,12 @@ var1 ./import1.atmc
 				ob.
 					KV(func(kvb *testlinkedast.KVBuilder) {
 						kvb.
-							Key(linkedast.NewIdent("a")).
+							Key("a").
 							Value(linkedast.NewInt(3))
 					}).
 					KV(func(kvb *testlinkedast.KVBuilder) {
 						kvb.
-							Key(linkedast.NewIdent("b")).
+							Key("b").
 							Value(testlinkedast.NewArrayBuilder().
 								Element(linkedast.NewInt(1)).
 								Element(linkedast.NewInt(2)).
@@ -669,17 +669,17 @@ var1 ./import1.atmc
 				ob.
 					KV(func(kvb *testlinkedast.KVBuilder) {
 						kvb.
-							Key(linkedast.NewIdent("a")).
+							Key("a").
 							Value(linkedast.NewInt(3))
 					}).
 					KV(func(kvb *testlinkedast.KVBuilder) {
 						kvb.
-							Key(linkedast.NewIdent("b")).
+							Key("b").
 							Value(linkedast.NewInt(4))
 					}).
 					KV(func(kvb *testlinkedast.KVBuilder) {
 						kvb.
-							Key(linkedast.NewIdent("c")).
+							Key("c").
 							Value(linkedast.NewInt(5))
 					})
 			}).
@@ -725,17 +725,17 @@ var1 ./import1.atmc
 				ob.
 					KV(func(kvb *testlinkedast.KVBuilder) {
 						kvb.
-							Key(linkedast.NewIdent("a")).
+							Key("a").
 							Value(linkedast.NewInt(1))
 					}).
 					KV(func(kvb *testlinkedast.KVBuilder) {
 						kvb.
-							Key(linkedast.NewIdent("b")).
+							Key("b").
 							Value(linkedast.NewInt(2))
 					}).
 					KV(func(kvb *testlinkedast.KVBuilder) {
 						kvb.
-							Key(linkedast.NewIdent("c")).
+							Key("c").
 							Value(linkedast.NewInt(5))
 					})
 			}).
